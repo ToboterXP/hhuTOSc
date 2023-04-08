@@ -51,15 +51,15 @@ OutStream& OutStream::operator << (char* string) {
 OutStream& OutStream::operator << (short ival) {
     return *this << (long) ival;
 }
-  
+
 OutStream& OutStream::operator << (unsigned short ival) {
     return *this << (unsigned long) ival;
 }
-  
+
 OutStream& OutStream::operator << (int ival) {
     return *this << (long) ival;
 }
-  
+
 OutStream& OutStream::operator << (unsigned int ival) {
     return *this << (unsigned long) ival;
 }
@@ -79,7 +79,7 @@ OutStream& OutStream::operator << (long ival) {
 OutStream& OutStream::operator << (unsigned long ival) {
     unsigned long div;
     char digit;
-   
+
     if (base == 8)
         put ('0');         // oktale Zahlen erhalten eine fuehrende Null
     else if (base == 16) {
@@ -134,6 +134,11 @@ OutStream& endl (OutStream& os) {
     return os;
 }
 
+OutStream& end (OutStream& os) {
+    os.flush ();
+    return os;
+}
+
 // Waehlt das binaere Zahlensystem aus.
 OutStream& bin (OutStream& os) {
     os.base = 2;
@@ -157,4 +162,3 @@ OutStream& hex (OutStream& os) {
     os.base = 16;
     return os;
 }
-

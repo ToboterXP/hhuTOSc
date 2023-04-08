@@ -11,26 +11,22 @@
  *****************************************************************************/
 
 #include "kernel/Globals.h"
-#include "user/aufgabe1/TextDemo.h"
-#include "user/aufgabe1/KeyboardDemo.h"
+#include "applications/sm/SessionManager.h"
 
 
-void aufgabe01() { 
-   // Bildschirmausgabe testen
-   text_demo();
-    
-   // Tastatur testen
-   keyboard_demo();
-}
 
 int main() {
-    /* Hier muess Code eingefuegt werden */
+    kout.clear();
 
-    // Bildschirm loeschen.
-    
-    // Startmeldung ausgeben
+    kout << "Welcome to hhuTOSc" << endl;
 
-    aufgabe01();
+    kb.init();
+
+    kout << "Keyboard initialized" << endl;
+
+
+    auto sm = applications::sm::SessionManager();
+    sm.main();
 
     while (1);
     return 0;

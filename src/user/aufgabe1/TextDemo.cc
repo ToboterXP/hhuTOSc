@@ -12,7 +12,5 @@
 
 
 void text_demo() {
-   
-   /* Hier muss Code eingefuegt werden */
 
 }

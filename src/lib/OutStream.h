@@ -7,13 +7,13 @@
  *                  << Operators fuer die wichtigsten der vordefinierten     *
  *                  Datentypen und realisiert somit die bekannte Ausgabe-    *
  *                  funktion der C++ iO_Stream Bibliothek. Zur Zeit wird     *
- *                  die Darstellung von Zeichen, Zeichenketten und ganzen    * 
+ *                  die Darstellung von Zeichen, Zeichenketten und ganzen    *
  *                  Zahlen unterstuetzt. Ein weiterer << Operator erlaubt    *
  *                  die Verwendung von Manipulatoren.                        *
  *                                                                           *
  *                  Neben der Klasse OutStream sind hier auch die            *
  *                  Manipulatoren hex, dec, oct und bin fuer die Wahl der    *
- *                  Basis bei der Zahlendarstellung, sowie endl fuer den     * 
+ *                  Basis bei der Zahlendarstellung, sowie endl fuer den     *
  *                  Zeilenumbruch definiert.                                 *
  *                                                                           *
  * Autor:           Olaf Spinczyk, TU Dortmund                               *
@@ -25,7 +25,7 @@
 #include "lib/StringBuffer.h"
 
 class OutStream : public StringBuffer {
-    
+
 private:
       OutStream(const OutStream &copy); // Verhindere Kopieren
 
@@ -59,7 +59,7 @@ public:
 
       // Aufruf einer Manipulatorfunktion
       OutStream& operator << (OutStream& (*f) (OutStream&));
-    
+
 };
 
 
@@ -75,6 +75,7 @@ public:
 
 // Zeilenumbruch in Ausgabe einfuegen.
 OutStream& endl (OutStream& os);
+OutStream& end (OutStream& os); //Flush ohne Newline
 
 // Waehle binaeres Zahlensystem aus.
 OutStream& bin (OutStream& os);
@@ -89,4 +90,3 @@ OutStream& dec (OutStream& os);
 OutStream& hex (OutStream& os);
 
 #endif
-

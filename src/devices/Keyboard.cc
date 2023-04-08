@@ -9,6 +9,7 @@
  *****************************************************************************/
 
 #include "devices/Keyboard.h"
+#include "kernel/Globals.h"
 
 /* Tabellen fuer ASCII-Codes (Klassenvariablen) intiialisieren */
 
@@ -153,7 +154,7 @@ bool Keyboard::key_decoded () {
                 set_led (led::num_lock, gather.num_lock ());
             }
             break;
-	
+
         default: // alle anderen Tasten
             // ASCII-Codes aus den entsprechenden Tabellen auslesen, fertig.
             get_ascii_code ();
@@ -194,7 +195,7 @@ void Keyboard::get_ascii_code () {
     // Shift und CapsLock. Fuer Ctrl gibt es keine eigene Tabelle
     else if (gather.num_lock () && !prefix && code>=71 && code<=83) {
         // Bei eingeschaltetem NumLock und der Betaetigung einer der
-	    // Tasten des separaten Ziffernblocks (Codes 71-83), sollen 
+	    // Tasten des separaten Ziffernblocks (Codes 71-83), sollen
 	    // nicht die Scancodes der Cursortasten, sondern ASCII- und
 	    // Scancodes der ensprechenden Zifferntasten geliefert werden.
 	    // Die Tasten des Cursorblocks (prefix == prefix1) sollen
@@ -240,13 +241,17 @@ void Keyboard::get_ascii_code () {
  *****************************************************************************/
 Keyboard::Keyboard () :
    ctrl_port (0x64), data_port (0x60) {
-   // alle LEDs ausschalten (bei vielen PCs ist NumLock nach dem Booten an)
-   set_led (led::caps_lock, false);
-   set_led (led::scroll_lock, false);
-   set_led (led::num_lock, false);
 
-   // maximale Geschwindigkeit, minimale Verzoegerung
-   set_repeat_rate (0, 0);  
+}
+
+void Keyboard::init() {
+    // alle LEDs ausschalten (bei vielen PCs ist NumLock nach dem Booten an)
+    set_led (led::caps_lock, false);
+    set_led (led::scroll_lock, false);
+    set_led (led::num_lock, false);
+
+    // maximale Geschwindigkeit, minimale Verzoegerung
+    set_repeat_rate (0, 0);
 }
 
 
@@ -263,18 +268,24 @@ Keyboard::Keyboard () :
  *                  erfolgen.                                                *
  *                                                                           *
  * Rückgabewert:    Wenn der Tastendruck abgeschlossen ist und ein Scancode, *
- *                  sowie gegebenenfalls ein ASCII-Code emittelt werden      * 
+ *                  sowie gegebenenfalls ein ASCII-Code emittelt werden      *
  *                  konnte, werden diese in 'gather' (siehe Keyboard.h)      *
  *                  zurueckgeliefert. Anderenfalls liefert key_hit () einen  *
  *                  ungueltigen Wert zurueck, was mit Key::valid ()          *
  *                  ueberprueft werden kann.                                 *
  *****************************************************************************/
 Key Keyboard::key_hit () {
-    Key invalid;  // nicht explizit initialisierte Tasten sind ungueltig
-         
-    /* Hier muss Code eingefuegt werden. */
+    gather.invalidate();
 
-    return invalid;
+    bool done = false;
+
+    while (!done) {
+        while (!(ctrl_port.inb() & 1));
+        code = data_port.inb();
+        done = key_decoded();
+    };
+
+    return gather;
 }
 
 
@@ -298,6 +309,14 @@ void Keyboard::reboot () {
 }
 
 
+void Keyboard::send_command(uint8_t comm, uint8_t data) {
+    data_port.outb(comm);
+    while (!ctrl_port.inb() & 0x1);
+    data_port.outb(data);
+    while (!ctrl_port.inb() & 0x1);
+}
+
+
 /*****************************************************************************
  * Methode:         Keyboard::set_repeat_rate                                *
  *---------------------------------------------------------------------------*
@@ -312,9 +331,7 @@ void Keyboard::reboot () {
  *                  und 31 (sehr langsam).                                   *
  *****************************************************************************/
 void Keyboard::set_repeat_rate (int speed, int delay) {
-
-    /* Hier muss Code eingefuegt werden. */
-
+    send_command(0xf3, (speed & 0b11111) | ((delay & 0b11) << 5));
 }
 
 
@@ -328,7 +345,7 @@ void Keyboard::set_repeat_rate (int speed, int delay) {
  *      on:         0 = aus, 1 = an                                          *
  *****************************************************************************/
 void Keyboard::set_led (char led, bool on) {
+    leds = (leds & ~(1<<led)) | (on<<led);
 
-    /* Hier muss Code eingefuegt werden. */
-
+    send_command(0xed, leds);
 }

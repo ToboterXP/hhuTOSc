@@ -26,7 +26,7 @@ DELETE = rm
 ASM = nasm
 CC ?= gcc
 CXX ?= g++
-CFLAGS := $(CFLAGS) -m64 -Wall -fno-stack-protector -fno-omit-frame-pointer  -nostdlib -I. -g -ffreestanding -fno-pie -fno-pic -mpreferred-stack-boundary=4 -Wno-write-strings -mno-sse -mno-sse2 -mmanual-endbr
+CFLAGS := $(CFLAGS) -m64 -Wall -fno-stack-protector -fno-omit-frame-pointer  -nostdlib -I. -I ./libc -g -ffreestanding -fno-pie -fno-pic -mpreferred-stack-boundary=4 -Wno-write-strings -mno-sse -mno-sse2 -mmanual-endbr
 CXXFLAGS := $(CFLAGS) -Wno-non-virtual-dtor -nodefaultlibs -nostdinc -nostdlib -fno-threadsafe-statics -fno-use-cxa-atexit -fno-rtti -fno-exceptions
 GRUB_CFG := boot/grub.cfg
 
@@ -74,15 +74,15 @@ $(DEPDIR)/%.d : %.cc
 # --------------------------------------------------------------------------
 # Regeln zur Erzeugung der Objektdateien
 $(OBJDIR)/%.o : %.c
-	@echo "CC		$@" 
+	@echo "CC		$@"
 	@if test \( ! \( -d $(@D) \) \) ;then mkdir -p $(@D);fi
 	$(VERBOSE) $(CC) -c $(CFLAGS) -o $@ $<
 
 $(OBJDIR)/%.o : %.cc
-	@echo "CXX		$@" 
+	@echo "CXX		$@"
 	@if test \( ! \( -d $(@D) \) \) ;then mkdir -p $(@D);fi
 	$(VERBOSE) $(CXX) -c $(CXXFLAGS) -o $@ $<
-	
+
 $(OBJDIR)/_%.o : %.asm
 	@echo "ASM		$@"
 	@if test \( ! \( -d $(@D) \) \) ;then mkdir -p $(@D);fi
@@ -91,10 +91,10 @@ $(OBJDIR)/_%.o : %.asm
 
 # --------------------------------------------------------------------------
 # System binden
-$(OBJDIR)/system: $(BOOT_OBJECTS) $(OBJPRE)  
+$(OBJDIR)/system: $(BOOT_OBJECTS) $(OBJPRE)
 	@echo "LD		$@"
 	@if test \( ! \( -d $(@D) \) \) ;then mkdir -p $(@D);fi
-	$(VERBOSE) $(CXX) $(CXXFLAGS) -static -e startup -T sections -o $(OBJDIR)/system $(BOOT_OBJECTS) $(OBJPRE) 
+	$(VERBOSE) $(CXX) $(CXXFLAGS) -static -e startup -T sections -o $(OBJDIR)/system $(BOOT_OBJECTS) $(OBJPRE)
 
 
 # --------------------------------------------------------------------------
@@ -123,12 +123,12 @@ clean:
 bootdisk:  $(OBJDIR)/system.iso
 	dd if=$(OBJDIR)/system.iso of=$(BOOTDRIVE) conv=fdatasync status=progress
 	sync
-    
+
 # --------------------------------------------------------------------------
 # 'qemu' ruft den qemu-Emulator mit dem System auf.
 
 qemu: $(OBJDIR)/system.iso
-	qemu-system-x86_64 -cdrom $(OBJDIR)/system.iso -k en-us -soundhw pcspk -vga std
+	qemu-system-x86_64 -cdrom $(OBJDIR)/system.iso -k en-us -soundhw pcspk -vga std -machine ubuntu
 
 # --------------------------------------------------------------------------
 # 'qemu-gdb' ruft den qemu-Emulator mit aktiviertem GDB-Stub mit dem System
@@ -138,7 +138,7 @@ qemu-gdb: $(OBJDIR)/system.iso
 	$(VERBOSE) echo "break startup" > /tmp/gdbcommands.$(shell id -u)
 	$(VERBOSE) echo "target remote 127.0.0.1:1234" >> /tmp/gdbcommands.$(shell id -u)
 	$(VERBOSE) echo "continue" >> /tmp/gdbcommands.$(shell id -u)
-	qemu-system-x86_64 -cdrom $(OBJDIR)/system.iso -k en-us -s -S -soundhw pcspk -vga std 
+	qemu-system-x86_64 -cdrom $(OBJDIR)/system.iso -k en-us -s -S -soundhw pcspk -vga std
 
 # --------------------------------------------------------------------------
 # 'gdb' startet den GDB-Debugger und verbindet sich mit dem GDB-Stub des vorher
@@ -155,7 +155,7 @@ ifneq ($(MAKECMDGOALS),clean)
 -include $(DEP_FILES)
 endif
 
-.PHONY: clean bootdisk gdb 
+.PHONY: clean bootdisk gdb
 
 help:
 	@/bin/clear

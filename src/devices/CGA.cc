@@ -14,29 +14,46 @@
 #include "devices/CGA.h"
 
 
-/*****************************************************************************
- * Methode:         CGA::setpos                                              *
- *---------------------------------------------------------------------------*
- * Beschreibung:    Setzen des Cursors in Spalte x und Zeile y.              *
- *****************************************************************************/
-void CGA::setpos (int x, int y) {
+int CGA::readRegister(uint8_t index) {
+    index_port.outb(index);
+    return data_port.inb();
+}
 
-    /* Hier muess Code eingefuegt werden */
 
+void CGA::writeRegister(uint8_t index, uint8_t value) {
+    index_port.outb(index);
+    data_port.outb(value);
 }
 
 
 /*****************************************************************************
- * Methode:         CGA::getpos                                              *
+ * Methode:         CGA::setCursorPos                                              *
+ *---------------------------------------------------------------------------*
+ * Beschreibung:    Setzen des Cursors in Spalte x und Zeile y.              *
+ *****************************************************************************/
+void CGA::setCursorPos (int x, int y) {
+    if (x < 0 || x >= COLUMNS || y < 0 || y >= ROWS) return;
+    int offset = x + y * COLUMNS;
+
+    writeRegister(14, (offset & 0xff00)>>8 );
+    writeRegister(15, offset & 0xff);
+}
+
+
+/*****************************************************************************
+ * Methode:         CGA::getCursorPos                                              *
  *---------------------------------------------------------------------------*
  * Beschreibung:    Abfragem der Cursorposition                              *
  *                                                                           *
  * Rückgabewerte:   x und y                                                  *
  *****************************************************************************/
-void CGA::getpos (int &x, int &y) {
-    
-    /* Hier muess Code eingefuegt werden */
-    
+void CGA::getCursorPos (int &x, int &y) {
+    int high = readRegister(14);
+    int low = readRegister(15);
+    int offset = (high<<8) | low;
+
+    x = offset % COLUMNS;
+    y = offset / COLUMNS;
 }
 
 
@@ -51,10 +68,28 @@ void CGA::getpos (int &x, int &y) {
  *      character   Das auszugebende Zeichen                                 *
  *      attrib      Attributbyte fuer das Zeichen                            *
  *****************************************************************************/
+ CGA_Char * CGA::getCharacter(int x, int y) {
+     return &((*CGA_DATA)[y][x]);
+ }
+
 void CGA::show (int x, int y, char character, unsigned char attrib) {
-    
-    /* Hier muess Code eingefuegt werden */
-    
+    (*CGA_DATA)[y][x].character = character;
+    (*CGA_DATA)[y][x].attribute = attrib;
+}
+
+
+void CGA::printNewline(int n) {
+    int cursorX, cursorY;
+    getCursorPos(cursorX, cursorY);
+
+    cursorX = 0;
+    cursorY += n;
+    while (cursorY >= ROWS) {
+        scrollup();
+        cursorY--;
+    }
+
+    setCursorPos(cursorX, cursorY);
 }
 
 
@@ -70,9 +105,19 @@ void CGA::show (int x, int y, char character, unsigned char attrib) {
  *      attrib      Attributbyte fuer alle Zeichen der Zeichenkette          *
  *****************************************************************************/
 void CGA::print (char* string, int n, unsigned char attrib) {
-    
-    /* Hier muess Code eingefuegt werden */
-    
+    int cursorX, cursorY;
+
+    for (int i=0; i<n; i++) {
+        if (string[i] == '\n') printNewline();
+        if (string[i] < 0x20) continue; //ignore control chars
+
+        getCursorPos(cursorX, cursorY);
+        show(cursorX, cursorY, string[i], attrib);
+        cursorX++;
+
+        if (cursorX >= COLUMNS) printNewline();
+        else setCursorPos(cursorX, cursorY);
+    }
 }
 
 
@@ -83,10 +128,17 @@ void CGA::print (char* string, int n, unsigned char attrib) {
  *                  Die neue Zeile am unteren Bildrand wird mit Leerzeichen  *
  *                  gefuellt.                                                *
  *****************************************************************************/
-void CGA::scrollup () {
-    
-    /* Hier muess Code eingefuegt werden */
-    
+void CGA::scrollup (unsigned char attrib) {
+
+    for (int x = 0; x < COLUMNS; x++) {
+        for (int y = 0; y < ROWS-1; y++) {
+            (*CGA_DATA)[y][x] = (*CGA_DATA)[y+1][x];
+        }
+    }
+
+    for (int x = 0; x < COLUMNS; x++) {
+        show(x, ROWS-1, ' ', attrib);
+    }
 }
 
 
@@ -95,10 +147,22 @@ void CGA::scrollup () {
  *---------------------------------------------------------------------------*
  * Beschreibung:    Lösche den Textbildschirm.                               *
  *****************************************************************************/
-void CGA::clear () {
-    
-    /* Hier muess Code eingefuegt werden */
-    
+void CGA::clear (unsigned char attrib) {
+    for (int x = 0; x < COLUMNS; x++) {
+        for (int y = 0; y < ROWS; y++) {
+            (*CGA_DATA)[y][x].character = ' ';
+            (*CGA_DATA)[y][x].attribute = attrib;
+        }
+    }
+
+    setCursorPos(0,0);
+}
+
+void CGA::clearLine(int y, unsigned char attrib) {
+    for (int x = 0; x < COLUMNS; x++) {
+        (*CGA_DATA)[y][x].character = ' ';
+        (*CGA_DATA)[y][x].attribute = attrib;
+    }
 }
 
 
@@ -114,8 +178,7 @@ void CGA::clear () {
  *      fg          Foreground color                                         *
  *      blink       ywa/no                                                   *
  *****************************************************************************/
-unsigned char CGA::attribute (CGA::color bg, CGA::color fg, bool blink) {
-    
-    /* Hier muess Code eingefuegt werden */
-    
+unsigned char CGA::attribute (uint8_t bg, uint8_t fg, bool blink) {
+
+    return fg | ((bg & 0b111) << 4) | ((blink ? 1:0) << 7);
 }
