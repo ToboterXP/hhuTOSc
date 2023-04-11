@@ -84,7 +84,38 @@ void SessionManager::execute(char * command) {
 		kout << "hello: Prints a debug message" << endl;
 		kout << "clear: Clears the screen" << endl;
 		kout << "reboot: Reboots the OS" << endl;
+		kout << "heap_test: Displays the heap test program" << endl;
+		kout << "tetris: Plays the tetris theme" << endl;
 	}
+
+	else if (strcmp(command, "heap_test") == 0) {
+		allocator.dump_free_memory();
+		kout<<endl;
+
+	    void * a = allocator.alloc(256);
+	    void * b = allocator.alloc(512);
+
+	    kout <<"Allocated size 0x100: "<<a<<endl;
+		kout <<"Allocated size 0x200: "<<b<<endl;
+
+	    allocator.dump_free_memory();
+		kout<<endl;
+
+	    allocator.free(a);
+
+	    allocator.dump_free_memory();
+		kout<<endl;
+
+	    allocator.free(b);
+
+	    allocator.dump_free_memory();
+		kout<<endl;
+	}
+
+	else if (strcmp(command, "tetris") == 0) {
+		pcspk.tetris();
+	}
+
 	else {
 		kout << "Invalid Command" << endl;
 	}

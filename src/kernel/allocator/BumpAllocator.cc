@@ -9,7 +9,7 @@
  * Autor:           Michael Schoettner, HHU, 3.3.2022                        *
  *****************************************************************************/
 
-#include <stddef.h>
+//#include <stddef.h>
 #include "kernel/Globals.h"
 #include "kernel/allocator/LinkedListAllocator.h"
 
@@ -21,7 +21,8 @@
  *****************************************************************************/
 void BumpAllocator::init() {
 
-     /* Hier muess Code eingefuegt werden */
+     next = (uint8_t*)heap_start;
+     allocations = 0;
 
 }
 
@@ -32,8 +33,8 @@ void BumpAllocator::init() {
  * Beschreibung:    Ausgabe der Freispeicherinfos. Zu Debuggingzwecken.      *
  *****************************************************************************/
 void BumpAllocator::dump_free_memory() {
-    
-     /* Hier muess Code eingefuegt werden */
+
+     kout << "BumpAllocator start:" << heap_start<<" next:" << next << " end:"<<heap_end << endl;
 
 }
 
@@ -41,12 +42,13 @@ void BumpAllocator::dump_free_memory() {
 /*****************************************************************************
  * Methode:         BumpAllocator::alloc                                     *
  *---------------------------------------------------------------------------*
- * Beschreibung:    Einen neuen Speicherblock allozieren.                    * 
+ * Beschreibung:    Einen neuen Speicherblock allozieren.                    *
  *****************************************************************************/
-void * BumpAllocator::alloc(unsigned int req_size) {
-
-     /* Hier muess Code eingefuegt werden */
-
+void * BumpAllocator::alloc(uint32_t req_size) {
+     void * ret = next;
+     next += req_size;
+     allocations++;
+     return ret;
 }
 
 
@@ -56,6 +58,5 @@ void * BumpAllocator::alloc(unsigned int req_size) {
  * Beschreibung:    Nicht implementiert.                                     *
  *****************************************************************************/
 void BumpAllocator::free(void *ptr) {
-    kout << "   mm_free: ptr= " << hex << (unsigned int)ptr << ", not supported" << endl;
+    kout << "   mm_free: ptr= " << ptr << ", not supported" << endl;
 }
-

@@ -28,8 +28,8 @@ void PCSPK::play (float f, int len) {
     int freq = (int)f;
     int cntStart  =  1193180 / freq;
     int status;
-    
-    
+
+
     // Zaehler laden
     control.outb (0xB6);            // Zaehler-2 konfigurieren
     data2.outb (cntStart%256);      // Zaehler-2 laden (Lobyte)
@@ -41,7 +41,7 @@ void PCSPK::play (float f, int len) {
 
     // Pause
     delay(len);
-    
+
     // Lautsprecher ausschalten
     off ();
 }
@@ -63,7 +63,7 @@ void PCSPK::off () {
 /*****************************************************************************
  * Methode:         PCSPK::readCounter                                       *
  *---------------------------------------------------------------------------*
- * Beschreibung:    Zaehler von PIT Channel 0 auslesen.                      * 
+ * Beschreibung:    Zaehler von PIT Channel 0 auslesen.                      *
  *                  (wird fuer delay benoetigt).                             *
  *                                                                           *
  * Rückgabewerte:   counter                                                  *
@@ -83,13 +83,24 @@ inline unsigned int PCSPK::readCounter() {
  *---------------------------------------------------------------------------*
  * Beschreibung:    Verzoegerung um X ms (in 1ms Schritten; Min. 1ms).       *
  *                  Da der Counter "nur" 16 Bit hat muss man evt. mehrmals   *
- *                  herunterzaehlen.                                         * 
+ *                  herunterzaehlen.                                         *
  *                                                                           *
  * Parameter:       time (delay in ms)                                       *
  *****************************************************************************/
 inline void PCSPK::delay (int time) {
 
-    /* Hier muess Code eingefuegt werden */
+    uint64_t tick_time = 1193182 * (uint64_t)time / 1000;
+    control.outb(0b00110000);
+
+    while (tick_time > 0) {
+        uint16_t next_wait = tick_time > 0xffff ? 0xffff : tick_time;
+        tick_time -= next_wait;
+
+        data0.outb(next_wait&0xff);
+        data0.outb((next_wait>>8) & 0xff);
+
+        while (readCounter() > 16);
+    }
 
 }
 

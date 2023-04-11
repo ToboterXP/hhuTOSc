@@ -33,8 +33,8 @@ Allocator::Allocator() {
    // aber sehr umstaendlich, daher hier fest eingetragen
    total_mem = MEM_SIZE_DEF;
 
-   heap_start = HEAP_START;
-   heap_end   = HEAP_START + HEAP_SIZE;
+   heap_start = (void*)HEAP_START;
+   heap_end   = (void*)(HEAP_START + HEAP_SIZE);
    heap_size  = HEAP_SIZE;
 }
 
@@ -54,7 +54,7 @@ void* operator new[]( size_t count ) {
 void operator delete ( void* ptr )  {
     allocator.free(ptr);
 }
- 
+
 void operator delete[] ( void* ptr ) {
     allocator.free(ptr);
 }

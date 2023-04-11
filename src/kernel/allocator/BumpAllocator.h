@@ -16,9 +16,9 @@
 
 
 class BumpAllocator : Allocator {
-    
+
 private:
-      unsigned char *next;
+      uint8_t *next;
       unsigned int allocations;
 
       BumpAllocator(Allocator &copy); // Verhindere Kopieren
@@ -26,10 +26,10 @@ private:
 public:
       BumpAllocator () { }
 
-      void init ();        
-      void dump_free_memory ();
-      void* alloc (unsigned int req_size);
-      void free (void *ptr);
+      virtual void init ();
+      virtual void dump_free_memory ();
+      virtual void* alloc (uint32_t req_size);
+      virtual void free (void *ptr);
 
 };
 

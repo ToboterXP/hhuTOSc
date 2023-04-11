@@ -24,6 +24,9 @@ int main() {
 
     kout << "Keyboard initialized" << endl;
 
+    allocator.init();
+
+    kout << "Heap initialized" << endl;
 
     auto sm = applications::sm::SessionManager();
     sm.main();

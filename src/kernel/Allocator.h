@@ -22,21 +22,21 @@
 
 
 class Allocator {
-    
+
 private:
       Allocator(Allocator &copy); // Verhindere Kopieren
 
 public:
-      uint64_t heap_start;
-      uint64_t heap_end;
+      void * heap_start;
+      void * heap_end;
       uint64_t heap_size;
       bool     initialized;
 
       Allocator ();
 
-      virtual void init () = 0;        
+      virtual void init () = 0;
       virtual void dump_free_memory () = 0;
-      virtual void* alloc (uint64_t req_size) = 0;
+      virtual void* alloc (uint32_t req_size) = 0;
       virtual void free (void *ptr) = 0;
 
 };

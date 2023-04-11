@@ -1,14 +1,3 @@
-/*****************************************************************************
- *                                                                           *
- *                  L I N K E D L I S T A L L O C A T O R                    *
- *                                                                           *
- *---------------------------------------------------------------------------*
- * Beschreibung:    Einfache Speicherverwaltung, welche den freien Speicher  *
- *                  mithilfe einer einfach verketteten Liste verwaltet.      *
- *                                                                           *
- * Autor:           Michael Schoettner, HHU, 13.6.2020                        *
- *****************************************************************************/
-
 #ifndef __LinkedListAllocator_include__
 #define __LinkedListAllocator_include__
 
@@ -16,27 +5,28 @@
 
 
 // Format eines freien Blocks
-struct free_block {
-    unsigned int size;
-    struct free_block *next;
-};
+typedef struct _heap_block {
+    uint32_t size; // size of memory stored in the block (excluding the struct itself)
+	bool is_free;
+    struct _heap_block *next;
+	struct _heap_block *prev;
+} heap_block;
 
 
 class LinkedListAllocator : Allocator {
-    
+
 private:
-      // freie Bloecke werden verkettet
-      struct free_block *free_start;
+      heap_block *list_start;
 
       LinkedListAllocator(Allocator &copy); // Verhindere Kopieren
 
 public:
       LinkedListAllocator () { }
 
-      void init ();        
-      void dump_free_memory ();
-      void* alloc (unsigned int req_size);
-      void free (void *ptr);
+      virtual void init ();
+      virtual void dump_free_memory ();
+      virtual void* alloc (uint32_t req_size);
+      virtual void free (void *ptr);
 
 };
 
