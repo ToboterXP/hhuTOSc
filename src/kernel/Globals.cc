@@ -13,6 +13,7 @@
 CPU             cpu;        
 PCSPK           pcspk;      // PC-Lautsprecher
 CGA_Stream      kout;       // Ausgabe-Strom fuer Kernel
+Keyboard        kb;         // Tastatur
 uint64_t        total_mem;  // RAM total
 //BumpAllocator         allocator;       
 LinkedListAllocator   allocator;       
