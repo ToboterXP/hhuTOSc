@@ -16,7 +16,7 @@
 #include "kernel/interrupts/ISR.h"
 
 class Keyboard : public ISR {
-    
+
 private:
     Keyboard(const Keyboard &copy); // Verhindere Kopieren
 
@@ -46,7 +46,7 @@ private:
     // Antworten der Tastatur
     struct kbd_reply {
         enum { ack = 0xfa };
-     }; 
+     };
 
     // Konstanten fuer die Tastaturdekodierung
     enum { break_bit = 0x80, prefix1 = 0xe0, prefix2   = 0xe1 };
@@ -57,24 +57,29 @@ private:
     static unsigned char alt_tab[];
     static unsigned char asc_num_tab[];
     static unsigned char scan_num_tab[];
-         
+
     // Interpretiert die Make und Break-Codes der Tastatur.
     bool key_decoded ();
 
     // Ermittelt anhand von Tabellen den ASCII-Code.
     void get_ascii_code ();
-    
-   // Tastaturabfrage (vorerst Polling)
-   Key key_hit ();
-    
+
+
 public:
-   unsigned int lastkey; // speichert den ASCII-Code der zuletzt gedrückten Taste
-   
+    unsigned int lastkey; // speichert den ASCII-Code der zuletzt gedrückten Taste
+
    // Initialisierung der Tastatur.
    Keyboard ();
 
+   void init();
+
+   // Tastaturabfrage (vorerst Polling)
+   Key key_hit ();
+
    // Fuehrt einen Neustart des Rechners durch.
    void reboot ();
+
+   void send_command(uint8_t comm, uint8_t data);
 
    // Einstellen der Wiederholungsrate der Tastatur.
    void set_repeat_rate (int speed, int delay);
@@ -84,7 +89,7 @@ public:
 
    // Aktivierung der Unterbrechungen fuer die Tastatur
    void plugin ();
-    
+
    // Unterbrechnungsroutine der Tastatur.
    void trigger ();
 };

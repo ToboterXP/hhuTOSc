@@ -17,7 +17,6 @@ CGA_Stream            kout;       // Ausgabe-Strom fuer Kernel
 Keyboard              kb;         // Tastatur
 IntDispatcher         intdis;     // Unterbrechungsverteilung
 PIC                   pic;        // Interrupt-Controller
-unsigned int          total_mem;  // RAM total
-BumpAllocator         allocator;       
-//LinkedListAllocator   allocator;       
-
+uint64_t         	total_mem;  // RAM total
+//BumpAllocator         allocator;
+LinkedListAllocator   allocator;       

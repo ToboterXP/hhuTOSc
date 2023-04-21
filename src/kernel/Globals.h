@@ -25,8 +25,8 @@ extern CGA_Stream            kout;       // Ausgabe-Strom fuer Kernel
 extern Keyboard              kb;         // Tastatur
 extern IntDispatcher         intdis;     // Unterbrechungsverteilung
 extern PIC                   pic;        // Interrupt-Controller
-extern unsigned int          total_mem;  // RAM total
-extern BumpAllocator         allocator;       
-//extern LinkedListAllocator   allocator;       
+extern uint64_t          total_mem;  // RAM total
+//extern BumpAllocator         allocator;       
+extern LinkedListAllocator   allocator;
 
 #endif
