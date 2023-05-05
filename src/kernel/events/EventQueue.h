@@ -13,13 +13,13 @@ public:
 
 	int eventCount = 0;
 	void PushEvent(Event event);
-	Event PopEvent();
+	Event PopEvent(); //if not event is available, returns a NONE event
 	Event PeekEvent();
 	void Flush();
 
 	bool IsEmpty();
 
-	void Wait();
+	void Wait(); //waits until the next potential event
 };
 
 #endif
