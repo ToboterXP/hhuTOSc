@@ -15,7 +15,7 @@
  * Autor:           Olaf Spinczyk, TU Dortmund                               *
  *****************************************************************************/
 
-#include "kernel/PIC.h"
+#include "PIC.h"
 #include "kernel/IOport.h"
 
 
@@ -35,9 +35,18 @@ static IOport IMR2 (0xa1);    // interrupt mask register von PIC 2
  *      irq:        IRQ der erlaubt werden soll                              *
  *****************************************************************************/
 void PIC::allow (int irq) {
+    if (irq >= 16) return;
 
-    /* hier muss Code eingefuegt werden */
-    
+    IOport * target;
+    if (irq < 8) {
+        target = &IMR1;
+    } else {
+        target = &IMR2;
+        irq -= 8;
+    }
+
+    target->outb(target->inb() & ~(1<<irq));
+
 }
 
 
@@ -50,8 +59,17 @@ void PIC::allow (int irq) {
  *      interrupt:  IRQ der maskiert werden soll                             *
  *****************************************************************************/
 void PIC::forbid (int irq) {
+    if (irq >= 16) return;
 
-    /* hier muss Code eingefuegt werden */
+    IOport * target;
+    if (irq < 8) {
+        target = &IMR1;
+    } else {
+        target = &IMR2;
+        irq -= 8;
+    }
+
+    target->outb(target->inb() | (1<<irq));
 
 }
 
@@ -66,8 +84,16 @@ void PIC::forbid (int irq) {
  *      irq:  IRQ dessen Status erfragt werden soll                          *
  *****************************************************************************/
 bool PIC::status (int irq) {
+    if (irq >= 16) return false;
 
-    /* hier muss Code eingefuegt werden */
+    IOport * target;
+    if (irq < 8) {
+        target = &IMR1;
+    } else {
+        target = &IMR2;
+        irq -= 8;
+    }
+
+    return (target->inb() >> irq) & 1;
 
 }
- 

@@ -12,57 +12,66 @@ void SessionManager::main() {
 
 	int cursorX, cursorY;
 
+	kout.getCursorPos(cursorX, cursorY);
+	kout.getCharacter(cursorX, cursorY)->attribute = kout.attribute(CGA_Color::LIGHT_GREY, CGA_Color::BLACK, true);
+
 	while (1) {
-		kout.getCursorPos(cursorX, cursorY);
-		kout.getCharacter(cursorX, cursorY)->attribute = ~CGA::STD_ATTR;
+		while (!eventQueue.IsEmpty()) {
+			Event event = eventQueue.PopEvent();
 
-		Key key = kb.key_hit();
+			if (event.type == EventType::KEY_DOWN && event.keyEvent.has_key) {
 
-		kout.getCursorPos(cursorX, cursorY);
-		kout.getCharacter(cursorX, cursorY)->attribute = CGA::STD_ATTR;
+				kout.getCursorPos(cursorX, cursorY);
+				kout.getCharacter(cursorX, cursorY)->attribute = CGA::STD_ATTR;
 
-		kout.clearLine(cursorY);
-		kout.setCursorPos(0, cursorY);
-		cursorX -= 2; // detract prompt
+				kout.clearLine(cursorY);
+				kout.setCursorPos(0, cursorY);
+				cursorX -= 2; // detract prompt
 
-		if (key.ascii() == '\n') { //execute
-			kout << "> " << line_buffer << endl;
-			execute(line_buffer);
-			for(int i=0; i<buffer_length; i++) line_buffer[i] = '\0';
-			kout.getCursorPos(cursorX, cursorY);
-		}
+				Key key = event.keyEvent.key;
 
-		else if (key.ascii() == '\b') { //
-			if (cursorX > 0 && current_length > 0) {
-				for (int i = cursorX-1; i < buffer_length-1; i++) {
-					line_buffer[i] = line_buffer[i+1];
+				if (key.ascii() == '\n') { //execute
+					kout << "> " << line_buffer << endl;
+					execute(line_buffer);
+					for(int i=0; i<buffer_length; i++) line_buffer[i] = '\0';
+					kout.getCursorPos(cursorX, cursorY);
 				}
 
-				line_buffer[buffer_length-1] = '\0';
-				current_length--;
-				cursorX--;
+				else if (key.ascii() == '\b') { //
+					if (cursorX > 0 && current_length > 0) {
+						for (int i = cursorX-1; i < buffer_length-1; i++) {
+							line_buffer[i] = line_buffer[i+1];
+						}
+
+						line_buffer[buffer_length-1] = '\0';
+						current_length--;
+						cursorX--;
+					}
+				}
+
+				else if (key.scancode() == Key::scan::left && cursorX > 0) {
+					cursorX--;
+				}
+
+				else if (key.scancode() == Key::scan::right && cursorX < current_length) {
+					cursorX++;
+				}
+
+				else if (key.ascii() && current_length < buffer_length-1) {
+					for (int i = current_length; i > cursorX; i--) {
+						line_buffer[i] = line_buffer[i-1];
+					}
+					line_buffer[cursorX] = key.ascii();
+					current_length++;
+					cursorX++;
+				}
+
+				kout << "> " << line_buffer << end;
+				kout.setCursorPos(cursorX+2, cursorY);
+				kout.getCursorPos(cursorX, cursorY);
+				kout.getCharacter(cursorX, cursorY)->attribute = ~CGA::STD_ATTR;
 			}
 		}
-
-		else if (key.scancode() == Key::scan::left && cursorX > 0) {
-			cursorX--;
-		}
-
-		else if (key.scancode() == Key::scan::right && cursorX < current_length) {
-			cursorX++;
-		}
-
-		else if (key.ascii() && current_length < buffer_length-1) {
-			for (int i = current_length; i > cursorX; i--) {
-				line_buffer[i] = line_buffer[i-1];
-			}
-			line_buffer[cursorX] = key.ascii();
-			current_length++;
-			cursorX++;
-		}
-
-		kout << "> " << line_buffer << end;
-		kout.setCursorPos(cursorX+2, cursorY);
 	}
 }
 

@@ -69,7 +69,7 @@ private:
 public:
    // speichert den ASCII-Code der zuletzt gedrückten Taste
    // Variable wird in 'trigger' geschrieben
-   unsigned int lastkey; 
+   unsigned int lastkey;
 
    // Initialisierung der Tastatur.
    Keyboard ();
@@ -90,7 +90,7 @@ public:
    void set_led (char led, bool on);
 
    // Aktivierung der Unterbrechungen fuer die Tastatur
-   void plugin ();
+   void init ();
 
    // Unterbrechnungsroutine der Tastatur.
    void trigger ();

@@ -18,6 +18,7 @@
 #include "devices/CGA_Stream.h"
 #include "devices/Keyboard.h"
 #include "kernel/interrupts/IntDispatcher.h"
+#include "kernel/Events/EventQueue.h"
 
 extern CPU                   cpu;        // CPU-spezifische Funktionen
 extern PCSPK                 pcspk;      // PC-Lautsprecher
@@ -25,8 +26,9 @@ extern CGA_Stream            kout;       // Ausgabe-Strom fuer Kernel
 extern Keyboard              kb;         // Tastatur
 extern IntDispatcher         intdis;     // Unterbrechungsverteilung
 extern PIC                   pic;        // Interrupt-Controller
+extern EventQueue            eventQueue; //EventQueue
 extern uint64_t          total_mem;  // RAM total
-//extern BumpAllocator         allocator;       
+//extern BumpAllocator         allocator;
 extern LinkedListAllocator   allocator;
 
 #endif

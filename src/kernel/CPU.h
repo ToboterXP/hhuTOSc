@@ -17,20 +17,32 @@
 
 
 class CPU {
-    
+
 private:
     CPU(const CPU &copy);   // Verhindere Kopieren
 
+
 public:
+    int interruptDisableCount = 0;
     CPU() {}
 
    // Interrupts erlauben
    inline void enable_int() {
+      interruptDisableCount--;
+      if (interruptDisableCount <= 0) {
+          interruptDisableCount = 0;
+          asm volatile("sti\n\t nop\n\t" : : : "memory");
+      }
+
+   }
+
+   inline void force_enable_int() {
+      interruptDisableCount=0;
       asm volatile("sti\n\t nop\n\t" : : : "memory");
    }
 
    /* Interrupts sperren
-    * 
+    *
     * Rueckgabewert: true, wenn die Unterbrechungen zum Zeitpunkt des Aufrufs frei waren
     *                false, wenn sie schon gesperrt waren.
     */
@@ -44,6 +56,8 @@ public:
 		:
 		: "memory"
 	  );
+
+      interruptDisableCount++;
 
 	  bool enabled = (out & 0x200) != 0;
 	  return enabled;
@@ -70,8 +84,8 @@ public:
    inline void idle() {
       asm volatile("sti\n\t hlt\n\t" : : : "memory");
    }
-   
-   
+
+
    /* Prozessor dauerhaft anhalten
     *
     *  Hält den Prozessor an. Intern werden dazu die Interrupts mit \b cli
@@ -102,9 +116,9 @@ public:
     */
    inline uint64_t getflags() {
       uint64_t retval = 0;
-      
+
       asm volatile("pushf;"
-                   "pop %0;" : "=a" (retval) 
+                   "pop %0;" : "=a" (retval)
                   );
       return retval;
    }

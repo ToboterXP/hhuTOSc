@@ -97,6 +97,11 @@ bool Keyboard::key_decoded () {
                 break;
         }
 
+        /*Event releaseEvent;
+        releaseEvent.type = EventType::KEY_UP;
+        releaseEvent.keyEvent.code = code;
+        eventQueue.PushEvent(releaseEvent);*/
+
         // Ein Prefix gilt immer nur fuer den unmittelbar nachfolgenden Code.
         // Also ist es jetzt abgehandelt.
         prefix = 0;
@@ -160,6 +165,19 @@ bool Keyboard::key_decoded () {
             get_ascii_code ();
             done = true;
         }
+
+    if (code < 0xe0) {
+        Event pressEvent;
+        pressEvent.type = EventType::KEY_DOWN;
+        pressEvent.keyEvent.code = code;
+        if (done) {
+            pressEvent.keyEvent.has_key = true;
+            pressEvent.keyEvent.code = gather.scancode();
+            pressEvent.keyEvent.key = gather;
+        }
+        eventQueue.PushEvent(pressEvent);
+    }
+
 
     // Ein Prefix gilt immer nur fuer den unmittelbar nachfolgenden Code.
     // Also ist es jetzt abgehandelt.
@@ -252,6 +270,14 @@ void Keyboard::init() {
 
     // maximale Geschwindigkeit, minimale Verzoegerung
     set_repeat_rate (0, 0);
+
+    pic.allow(1);
+    intdis.assign(intdis.keyboard, *this);
+}
+
+void Keyboard::trigger() {
+    code = data_port.inb();
+    key_decoded();
 }
 
 
@@ -274,7 +300,7 @@ void Keyboard::init() {
  *                  ungueltigen Wert zurueck, was mit Key::valid ()          *
  *                  ueberprueft werden kann.                                 *
  *****************************************************************************/
-Key Keyboard::key_hit () {
+/*Key Keyboard::key_hit () {
     gather.invalidate();
 
     bool done = false;
@@ -286,7 +312,7 @@ Key Keyboard::key_hit () {
     };
 
     return gather;
-}
+}*/
 
 
 /*****************************************************************************
@@ -330,7 +356,7 @@ void Keyboard::send_command(uint8_t comm, uint8_t data) {
  *                  sollen. Erlaubt sind Werte zwischen 0 (sehr schnell)     *
  *                  und 31 (sehr langsam).                                   *
  *****************************************************************************/
-void Keyboard::set_repeat_rate (int speed, int delay) {
+void Keyboard::set_repeat_rate (uint32_t speed, uint32_t delay) {
     send_command(0xf3, (speed & 0b11111) | ((delay & 0b11) << 5));
 }
 

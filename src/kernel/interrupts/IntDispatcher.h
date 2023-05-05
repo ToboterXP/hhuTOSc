@@ -13,14 +13,14 @@
 #ifndef __IntDispatcher_include__
 #define __IntDispatcher_include__
 
-#include "kernel/ISR.h"
+#include "kernel/interrupts/ISR.h"
 
 
 class IntDispatcher {
-    
+
 private:
     IntDispatcher(const IntDispatcher &copy); // Verhindere Kopieren
-    
+
     enum { size = 256 };
     ISR* map[size];
 
@@ -30,16 +30,16 @@ public:
         timer = 32,
         keyboard = 33
     };
-    
+
     // Initialisierung der ISR map mit einer Default-ISR.
     IntDispatcher ();
-    
-    // Registrierung einer ISR. (Rueckgabewert: 0 = Erfolg, -1 = Fehler) 
+
+    // Registrierung einer ISR. (Rueckgabewert: 0 = Erfolg, -1 = Fehler)
     int assign (unsigned int vector, ISR& gate);
-    
+
     // ISR fuer 'vector' ausfuehren
     int report (unsigned int vector);
-    
+
 };
 
 #endif

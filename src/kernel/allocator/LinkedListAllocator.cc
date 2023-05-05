@@ -61,6 +61,9 @@ void * LinkedListAllocator::alloc(uint32_t req_size) {
 
 
 void LinkedListAllocator::free(void *ptr) {
+
+	if (heap_start > ptr || heap_end <= ptr) return;
+	
 	heap_block* current = (heap_block*)((uint8_t*)ptr - sizeof(heap_block));
 	current->is_free = true;
 
