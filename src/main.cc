@@ -20,6 +20,10 @@ int main() {
 
     kout << "Welcome to hhuTOSc" << endl;
 
+    init_interrupts();
+
+    kout << "Interrupts initialized" << endl;
+
     kb.init();
 
     kout << "Keyboard initialized" << endl;
