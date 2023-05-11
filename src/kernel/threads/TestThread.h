@@ -32,7 +32,6 @@ public:
             pcspk.delay(100);
             if (i >= (int)(tid+1) * 3) scheduler.exit();
 
-            scheduler.yield ();
         }
     }
 

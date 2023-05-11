@@ -22,8 +22,19 @@ uint64_t         	total_mem;  // RAM total
 //BumpAllocator         allocator;
 LinkedListAllocator   allocator;
 Scheduler             scheduler;  // Scheduler
-uint64_t              systime=0;  // wird all 10ms hochgezaehlt
-PIT                   pit(10000); // Zeitgeber (10ms)
+volatile uint64_t              systime=0;  // Millisekunden seit Systemstart
+PIT                   pit; // Zeitgeber
+
+extern "C" void IncrementSysTime();
+
+void IncrementSysTime() {
+	systime++;
+}
+
+void InitTimer() {
+	pit.AddTimer(1000, &IncrementSysTime);
+}
+
 
 extern "C" void dbgPrint();
 extern "C" void dbgPrintValue();

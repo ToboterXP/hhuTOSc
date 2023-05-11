@@ -53,6 +53,7 @@ public:
       OutStream& operator << (unsigned int ival);
       OutStream& operator << (long ival);
       OutStream& operator << (unsigned long ival);
+      OutStream& operator << (unsigned long long ival);
 
       // Darstellung eines Zeigers als hexadezimale ganze Zahl
       OutStream& operator << (void* ptr);

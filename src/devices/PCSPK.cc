@@ -88,18 +88,9 @@ inline unsigned int PCSPK::readCounter() {
  * Parameter:       time (delay in ms)                                       *
  *****************************************************************************/
 inline void PCSPK::delay (int time) {
-    uint64_t tick_time = 1193182 * (uint64_t)time / 1000;
-    control.outb(0b00110000);
+    uint64_t start = systime;
 
-    while (tick_time > 0) {
-        uint16_t next_wait = tick_time > 0xffff ? 0xffff : tick_time;
-        tick_time -= next_wait;
-
-        data0.outb(next_wait&0xff);
-        data0.outb((next_wait>>8) & 0xff);
-
-        while (readCounter() > 16);
-    }
+    while (systime < start+time) {}
 }
 
 

@@ -35,7 +35,9 @@ extern uint64_t          total_mem;  // RAM total
 extern LinkedListAllocator   allocator;
 extern Scheduler        scheduler;  // Scheduler
 
-extern uint64_t              systime;    // wird all 10ms hochgezaehlt
+extern volatile uint64_t              systime;    // wird all 10ms hochgezaehlt
 extern PIT                   pit;        // Zeitgeber
 
+
+extern void InitTimer();
 #endif

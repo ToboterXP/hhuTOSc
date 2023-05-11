@@ -103,6 +103,10 @@ OutStream& OutStream::operator << (unsigned long ival) {
     return *this;
 }
 
+OutStream& OutStream::operator << (unsigned long long ival) {
+    return *this << (unsigned long) ival;
+}
+
 // Darstellung eines Zeigers als hexadezimale ganze Zahl
 OutStream& OutStream::operator << (void* ptr) {
     int oldbase = base;

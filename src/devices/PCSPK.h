@@ -70,7 +70,7 @@ private:
     PCSPK (const PCSPK &copy); // Verhindere Kopieren
 
 
-
+    int i=0;
     // Zaehler von PIT Channel 0 auslesen (wird fuer delay benoetigt)
     inline unsigned int readCounter ();
 

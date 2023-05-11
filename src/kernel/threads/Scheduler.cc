@@ -24,7 +24,7 @@
 #include "kernel/threads/TestThread.h"
 #include "kernel/Globals.h"
 
-
+extern "C" void preempt ();
 
 /*****************************************************************************
  * Methode:         Scheduler::schedule                                      *
@@ -32,6 +32,8 @@
  * Beschreibung:    Scheduler starten. Wird nur einmalig aus main.cc gerufen.*
  *****************************************************************************/
 void Scheduler::schedule () {
+    pit.AddTimer(5000, &preempt);
+
     start(readyQueue.pop_last());
 }
 
@@ -43,10 +45,11 @@ void Scheduler::schedule () {
  *                  schaltet auf den naechsten Thread um, sofern einer vor-  *
  *                  handen ist.                                              *
  *****************************************************************************/
-void Scheduler::preempt () {
 
-   /* Hier muss Code eingefuegt werden */
+void preempt () {
+    scheduler.yield();
 }
+
 
 void Scheduler::ready (Thread * that) {
     readyQueue.prepend(that);
