@@ -21,27 +21,37 @@
 #ifndef __Scheduler_include__
 #define __Scheduler_include__
 
-#include "kernel/threads/Dispatch.h"
+#include "lib/Types.h"
 #include "kernel/threads/Thread.h"
-#include "lib/Queue.h"
+#include "lib/List.h"
 
-class Scheduler : public Dispatcher {
-    
+class Scheduler{
+
 private:
     Scheduler (const Scheduler &copy); // Verhindere Kopieren
-     
+
 private:
-    Queue readyQueue;   // auf die CPU wartende Threads
-   
+    List<Thread*> readyQueue = List<Thread*>(NULL);   // auf die CPU wartende Threads
+
+    List<Thread*> killedQueue  = List<Thread*>(NULL); //Threads to be removed;
+
+    Thread* active = NULL;     // aktiver Thread
+
+    void start (Thread* first);
+
+    void dispatch (Thread* next);
+
+    void disposeKilledThreads();
+
 public:
     Scheduler () {}
 
     // Scheduler starten
     void schedule ();
-    
+
     // Thread in ReadyQueue eintragen
     void ready (Thread* that);
-    
+
     // Thread terminiert sich selbst
     void exit ();
 
@@ -50,6 +60,8 @@ public:
 
     // CPU freiwillig abgeben und Auswahl des naechsten Threads
     void yield ();
+
+    Thread* get_active () { return active; }
 };
 
 #endif

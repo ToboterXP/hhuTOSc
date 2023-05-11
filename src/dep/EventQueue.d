@@ -5,4 +5,5 @@ build/EventQueue.o: kernel/events/EventQueue.cc \
  kernel/allocator/BumpAllocator.h kernel/Allocator.h \
  kernel/allocator/LinkedListAllocator.h devices/PCSPK.h \
  devices/CGA_Stream.h devices/CGA.h lib/OutStream.h lib/StringBuffer.h \
- kernel/interrupts/IntDispatcher.h kernel/Events/EventQueue.h
+ kernel/interrupts/IntDispatcher.h kernel/threads/Scheduler.h \
+ kernel/threads/Thread.h kernel/Events/EventQueue.h

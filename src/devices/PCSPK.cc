@@ -88,7 +88,6 @@ inline unsigned int PCSPK::readCounter() {
  * Parameter:       time (delay in ms)                                       *
  *****************************************************************************/
 inline void PCSPK::delay (int time) {
-
     uint64_t tick_time = 1193182 * (uint64_t)time / 1000;
     control.outb(0b00110000);
 
@@ -101,7 +100,6 @@ inline void PCSPK::delay (int time) {
 
         while (readCounter() > 16);
     }
-
 }
 
 

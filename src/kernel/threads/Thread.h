@@ -1,48 +1,59 @@
 /*****************************************************************************
  *                                                                           *
- *                                 T H R E A D                               *
+ *                  C O R O U T I N E                                        *
  *                                                                           *
  *---------------------------------------------------------------------------*
- * Beschreibung:    Implementierung eines Thread-Konzepts.                   *
+ * Beschreibung:    Implementierung eines Koroutinen-Konzepts.               *
  *                                                                           *
- *                  Im Konstruktor wird Speicher für den Stack reserviert    *
- *                  sowie der initiale Kontext des Threads eingerichtet.     * 
- *                  Mit 'start' wird ein Thread aktiviert. Das Umschalten    * 
- *                  auf den naechsten Thread erfolgt durch 'switchTo'.       *
+ *                  Die Koroutinen sind miteinander verkettet, weswegen die  *
+ *                  Klasse Thread ein Subtyp von 'Chain' ist.             *
  *                                                                           *
- * Autor:           Michael, Schoettner, HHU, 16.12.2016                     *
+ *                  Im Konstruktor wird der initialie Kontext der Koroutine  *
+ *                  eingerichtet. Mit 'start' wird ein Koroutine aktiviert.  *
+ *                  Das Umschalten auf die naechste Koroutine erfolgt durch  *
+ *                  Aufruf von 'switchToNext'.                               *
+ *                                                                           *
+ *                  Bei einem Koroutinenwechsel werden die Register auf dem  *
+ *                  Stack gesichert. Die Instanzvariable 'context' zeigt auf *
+ *                  den letzten hierfuer genutzten Stackeintrag.             *
+ *                                                                           *
+ * Autor:           Michael, Schoettner, HHU, 13.01.2023                     *
  *****************************************************************************/
 
 #ifndef __Thread_include__
 #define __Thread_include__
 
-#include "lib/Chain.h"
 #include "lib/Types.h"
 
-class Thread : public Chain {
-    
+
+class Thread {
+
 private:
     Thread(const Thread &copy); // Verhindere Kopieren
 
 private:
-    uint64_t * stack;        // pointer auf Stack des Threads
-    uint64_t   context; 	 // Stack-Zeiger auf gesicherten Kontext
+    uint64_t* stack;
+    uint64_t* context; 	// Stack-Zeiger auf gesicherten Kontext
+
+    static uint32_t next_tid;
 
 public:
-    unsigned int tid;       // Thread-ID (wird automatisch vergeben)
-    
+    uint32_t tid;
+
     Thread ();
-    ~Thread ();
-   
+
     // Thread aktivieren
     void start ();
 
-    // Umschalten auf Thread 'next'
-    void switchTo (Thread& next);
+    //removes all ancillary objects from the stack
+    void free();
 
-    // Methode des Threads, muss in Sub-Klasse implementiert werden
+    // Auf die naechste Thread umschalten
+    void switchTo (Thread* next);
+
+    // Methode der Thread, muss in Sub-Klasse implementiert werden
     virtual void run () = 0;
-    
+
  };
 
 #endif

@@ -22,3 +22,16 @@ uint64_t         	total_mem;  // RAM total
 //BumpAllocator         allocator;
 LinkedListAllocator   allocator;
 Scheduler             scheduler;  // Scheduler
+
+extern "C" void dbgPrint();
+extern "C" void dbgPrintValue();
+
+void dbgPrint() {
+	kout << "Hi" << endl;
+	return;
+}
+
+void dbgPrintValue(uint32_t a) {
+	kout << hex << a << endl;
+	return;
+}

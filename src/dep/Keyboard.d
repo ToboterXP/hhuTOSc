@@ -4,4 +4,5 @@ build/Keyboard.o: devices/Keyboard.cc devices/Keyboard.h devices/Key.h \
  kernel/Allocator.h kernel/allocator/LinkedListAllocator.h \
  devices/PCSPK.h devices/CGA_Stream.h devices/CGA.h lib/OutStream.h \
  lib/StringBuffer.h kernel/interrupts/IntDispatcher.h \
- kernel/Events/EventQueue.h lib/List.h kernel/events/Event.h
+ kernel/threads/Scheduler.h kernel/threads/Thread.h lib/List.h \
+ kernel/Events/EventQueue.h kernel/events/Event.h

@@ -13,6 +13,8 @@
 #include "kernel/Globals.h"
 #include "applications/sm/SessionManager.h"
 
+#include "kernel/threads/TestThread.h"
+
 extern "C" void _init_interrupts();
 //VM Passwort: root
 
@@ -45,8 +47,15 @@ int main() {
 
     //allocator.dump_free_memory();
 
-    auto sm = applications::sm::SessionManager();
-    sm.main();
+    /*auto sm = applications::sm::SessionManager();
+    sm.main();*/
+
+    for (int i=0; i<3; i++) {
+        TestThread* n = new TestThread();
+        scheduler.ready(n);
+    }
+
+    scheduler.schedule();
 
     while (1);
     return 0;

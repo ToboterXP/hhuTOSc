@@ -76,6 +76,8 @@ public:
 		ListBlock<T>* retBlock = first;
 		T ret = retBlock->data;
 
+		if (retBlock->next) retBlock->next->prev = NULL;
+
 		first = retBlock->next;
 		if  (first == NULL) last = NULL;
 		delete retBlock;
@@ -90,11 +92,21 @@ public:
 		ListBlock<T>* retBlock = last;
 		T ret = retBlock->data;
 
+		if (retBlock->prev) retBlock->prev->next = NULL;
+
 		last = retBlock->prev;
 		if  (last == NULL) first = NULL;
 		delete retBlock;
 
 		return ret;
+	}
+
+	void remove(ListBlock<T>* block) {
+		if (first == block) first = block->next;
+		if (last == block) last = block->prev;
+
+		if (block->prev) block->prev->next = block->next;
+		if (block->next) block->next->prev = block->prev;
 	}
 
 	//returns whether the list is empty

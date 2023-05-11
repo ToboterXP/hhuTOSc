@@ -37,6 +37,7 @@ void int_disp (unsigned int vector) {
 
     if (intdis.report(vector) != 0) {
         if (vector < 32) kout << "Error "<< dec << vector <<endl;
+        cpu.die();
     }
 
     cpu.enable_int();
