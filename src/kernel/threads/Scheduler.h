@@ -23,22 +23,28 @@
 #ifndef __Scheduler_include__
 #define __Scheduler_include__
 
-#include "kernel/threads/Dispatch.h"
+#include "lib/Types.h"
 #include "kernel/threads/Thread.h"
-#include "lib/Queue.h"
+#include "lib/List.h"
 
-class Scheduler : public Dispatcher {
-    
+class Scheduler{
+
 private:
     Scheduler (const Scheduler &copy); // Verhindere Kopieren
-     
+
 private:
-    Queue readyQueue;   // auf die CPU wartende Threads
-    
-    // Scheduler wird evt. von einer Unterbrechung vom Zeitgeber gerufen,
-    // bevor er initialisiert wurde
-    bool  initialized;
-    
+    List<Thread*> readyQueue = List<Thread*>(NULL);   // auf die CPU wartende Threads
+
+    List<Thread*> killedQueue  = List<Thread*>(NULL); //Threads to be removed;
+
+    Thread* active = NULL;     // aktiver Thread
+
+    void start (Thread* first);
+
+    void dispatch (Thread* next);
+
+    void disposeKilledThreads();
+
 public:
     Scheduler ();
 
@@ -46,16 +52,16 @@ public:
     // Zeitgeber-Unterbrechung kommt evt. bevor der Scheduler fertig
     // intiialisiert wurde!
     bool isInitialized() { return initialized; }
-    
+
     // ruft nur der Idle-Thread (erster Thread der vom Scheduler gestartet wird)
     void setInitialized() { initialized = true; }
 
     // Scheduler starten
     void schedule ();
-    
+
     // Thread in ReadyQueue eintragen
     void ready (Thread* that);
-    
+
     // Thread terminiert sich selbst
     void exit ();
 
@@ -64,17 +70,18 @@ public:
 
     // CPU freiwillig abgeben und Auswahl des naechsten Threads
     void yield ();
-    
-    // Thread umschalten; wird aus der ISR des PITs gerufen
-    void preempt ();
 
-    // Umschalten auf naechsten Thread, aber den 
+    // Umschalten auf naechsten Thread, aber den
     // Aufrufer nicht in die Ready-Queue einfuegen
     void block ();
-    
+
     // 'that' wieder in die Ready-Queue einfuegen
     void deblock (Thread &that);
 
+
+    void preempt();
+
+    Thread* get_active () { return active; }
 };
 
 #endif
