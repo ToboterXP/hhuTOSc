@@ -87,7 +87,7 @@ public:
     void play (float f, int len);
 
     // Verzoegerung um X ms (in 1ms Schritten; Min. 1ms)
-    inline void delay (int time);
+    void delay (int time);
 
     // Lautsprecher ausschalten
     void off ();

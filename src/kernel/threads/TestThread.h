@@ -29,7 +29,7 @@ public:
     void run () {
         while (1) {
             kout << i++ << " " << tid << endl;
-            pcspk.delay(100);
+            pcspk.delay(3);
             if (i >= (int)(tid+1) * 3) scheduler.exit();
 
         }

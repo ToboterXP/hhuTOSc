@@ -25,7 +25,7 @@ Scheduler             scheduler;  // Scheduler
 volatile uint64_t              systime=0;  // Millisekunden seit Systemstart
 PIT                   pit; // Zeitgeber
 
-extern "C" void IncrementSysTime();
+/*extern "C" void IncrementSysTime();
 
 void IncrementSysTime() {
 	systime++;
@@ -33,7 +33,7 @@ void IncrementSysTime() {
 
 void InitTimer() {
 	pit.AddTimer(1000, &IncrementSysTime);
-}
+}*/
 
 
 extern "C" void dbgPrint();

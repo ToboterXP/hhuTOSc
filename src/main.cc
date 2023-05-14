@@ -37,7 +37,7 @@ int main() {
 
 
     pit.init();
-    InitTimer();
+    //InitTimer();
     kout << "Timer initialized" << endl;
 
     cpu.force_enable_int();
@@ -55,20 +55,20 @@ int main() {
     /*auto sm = applications::sm::SessionManager();
     sm.main();*/
 
-    /*for (int i=0; i<3; i++) {
+    for (int i=0; i<3; i++) {
         TestThread* n = new TestThread();
         scheduler.ready(n);
     }
 
-    scheduler.schedule();*/
+    scheduler.schedule();
 
-    while (1) {
+    /*while (1) {
         kout << systime << endl;
         pcspk.delay(1000);
-    }
+    }*/
 
 
-    //pcspk.tetris();
+    //pcspk.aerodynamic();
 
     while (1);
     return 0;

@@ -19,7 +19,6 @@ typedef void (*CallbackHandler)();
 
 typedef struct _PITTimer {
     uint64_t divider;
-    uint64_t counter;
     CallbackHandler callback;
 } PITTimer;
 
@@ -40,6 +39,8 @@ private:
     enum { time_base = 838 };  /* ns */
     const uint64_t interval = 10; //microseconds
     uint16_t timer;
+
+    uint64_t base_timer = 0;
 public:
 
     PIT() : control(0x43), data0(0x40), data2(0x42), ppi(0x61), timers(empty) {
@@ -49,9 +50,9 @@ public:
     // Aktivierung der Unterbrechungen fuer den Zeitgeber
     void init ();
 
-    void AddTimer(uint32_t microseconds, CallbackHandler callback);
+    /*void AddTimer(uint32_t microseconds, CallbackHandler callback);
 
-    void RemoveTimer(CallbackHandler callback);
+    void RemoveTimer(CallbackHandler callback);*/
 
     // Unterbrechnungsroutine des Zeitgebers.
     void trigger ();

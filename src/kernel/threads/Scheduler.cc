@@ -32,8 +32,6 @@ extern "C" void preempt ();
  * Beschreibung:    Scheduler starten. Wird nur einmalig aus main.cc gerufen.*
  *****************************************************************************/
 void Scheduler::schedule () {
-    pit.AddTimer(5000, &preempt);
-
     start(readyQueue.pop_last());
 }
 
@@ -46,13 +44,16 @@ void Scheduler::schedule () {
  *                  handen ist.                                              *
  *****************************************************************************/
 
-void preempt () {
-    scheduler.yield();
+void Scheduler::preempt () {
+    if (active) yield();
+
 }
 
 
 void Scheduler::ready (Thread * that) {
+    cpu.disable_int();
     readyQueue.prepend(that);
+    cpu.enable_int();
 }
 
 
@@ -65,6 +66,7 @@ void Scheduler::ready (Thread * that) {
  *                  nicht in der readyQueue.                                 *
  *****************************************************************************/
 void Scheduler::exit () {
+    cpu.disable_int();
     killedQueue.append(active);
 
     if (readyQueue.is_empty()) {
@@ -87,7 +89,12 @@ void Scheduler::exit () {
  *      that        Zu terminierender Thread                                 *
  *****************************************************************************/
 void Scheduler::kill (Thread * that) {
-    if (that == active) return exit();
+    cpu.disable_int();
+    if (that == active) {
+        exit();
+        cpu.enable_int();
+        return;
+    }
 
     ListBlock<Thread*>* current = readyQueue.get_first();
 
@@ -95,10 +102,13 @@ void Scheduler::kill (Thread * that) {
         if (current->data == that) {
             readyQueue.remove(current);
             killedQueue.append(that);
+            cpu.enable_int();
             return;
         }
         current = current->GetNext();
     }
+
+    cpu.enable_int();
 }
 
 void Scheduler::disposeKilledThreads() {
@@ -122,6 +132,7 @@ void Scheduler::disposeKilledThreads() {
  *                           readyQueue leer.                                *
  *****************************************************************************/
 void Scheduler::yield () {
+    cpu.disable_int();
     //have to clean up threads here, since they are necessary for context switch
     disposeKilledThreads();
 
@@ -157,5 +168,6 @@ void Scheduler::start (Thread* first) {
 void Scheduler::dispatch (Thread* next) {
     Thread* current = active;
     active = next;
+    cpu.enable_int();
     current->switchTo (next);
 }

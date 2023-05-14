@@ -87,9 +87,10 @@ inline unsigned int PCSPK::readCounter() {
  *                                                                           *
  * Parameter:       time (delay in ms)                                       *
  *****************************************************************************/
-inline void PCSPK::delay (int time) {
+//__attribute__((optimize("O0"))) void PCSPK::delay (int time);
+void PCSPK::delay (int time) {
     uint64_t start = systime;
-
+    kout <<"";
     while (systime < start+time) {}
 }
 

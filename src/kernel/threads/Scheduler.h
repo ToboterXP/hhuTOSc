@@ -61,6 +61,8 @@ public:
     // CPU freiwillig abgeben und Auswahl des naechsten Threads
     void yield ();
 
+    void preempt();
+
     Thread* get_active () { return active; }
 };
 
