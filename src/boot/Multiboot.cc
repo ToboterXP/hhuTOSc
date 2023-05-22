@@ -18,7 +18,7 @@
 
 
 extern "C" {
-	void main(); 
+	void main();
 	void mb_init(uint64_t mbi_addr);
 }
 
@@ -29,13 +29,11 @@ void mb_init(uint64_t mbi_addr) {
    /* Set MBI to the address of the Multiboot information structure. */
    mbi = (multiboot_info_t *) mbi_addr;
 
-/*
    if (CHECK_FLAG (mbi->flags, 12)) {
-      kout.set_graphic_infos( mbi->framebuffer_addr, mbi->framebuffer_width, 
+      kout.set_graphic_infos( mbi->framebuffer_addr, mbi->framebuffer_width,
                               mbi->framebuffer_height, mbi->framebuffer_pitch,
                               mbi->framebuffer_bpp
                             );
     }
-*/    
     main();
 }

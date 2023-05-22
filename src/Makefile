@@ -26,7 +26,7 @@ DELETE = rm
 ASM = nasm
 CC ?= gcc
 CXX ?= g++
-CFLAGS := $(CFLAGS) -m64 -Wall -fno-stack-protector -fno-omit-frame-pointer  -nostdlib -I. -I ./libc -g -ffreestanding -fno-pie -fno-pic -mpreferred-stack-boundary=4 -Wno-write-strings -mno-sse -mno-sse2 -mmanual-endbr
+CFLAGS := $(CFLAGS) -fmax-errors=10 -m64 -Wall -fno-stack-protector -fno-omit-frame-pointer  -nostdlib -I. -I ./libc -g -ffreestanding -fno-pie -fno-pic -mpreferred-stack-boundary=4 -Wno-write-strings -mno-sse -mno-sse2 -mmanual-endbr
 CXXFLAGS := $(CFLAGS) -Wno-non-virtual-dtor -nodefaultlibs -nostdinc -nostdlib -fno-threadsafe-statics -fno-use-cxa-atexit -fno-rtti -fno-exceptions
 GRUB_CFG := boot/grub.cfg
 

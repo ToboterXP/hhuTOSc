@@ -3,13 +3,14 @@
  *                  T Y P E S                                                *
  *                                                                           *
  *---------------------------------------------------------------------------*
- * Beschreibung:    Grundlegende Integer-Datentypen und deren Limits.        * 
+ * Beschreibung:    Grundlegende Integer-Datentypen und deren Limits.        *
  *                                                                           *
  * Autor:           Christian Dietrich, TUHH                                 *
  *****************************************************************************/
 
 #ifndef __Types_include__
 #define __Types_include__
+
 
 // Standard Integer Types
 typedef unsigned char      uint8_t;
@@ -42,9 +43,8 @@ static_assert(sizeof(uint32_t)  == (4), "Wrong size for 'uint32_t'");
 static_assert(sizeof(uint64_t)  == (8), "Wrong size for 'uint64_t'");
 static_assert(sizeof(uintptr_t) == sizeof(void*), "Wrong size for 'uintptr_t'");
 
-#ifndef NULL
-#define NULL ((uintptr_t)0)
-#endif
+#define NULL 0
+
 
 // Limits
 #define INT8_MIN            (-__INT8_MAX__-1)

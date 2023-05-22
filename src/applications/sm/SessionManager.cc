@@ -18,10 +18,13 @@ void SessionManager::main() {
 	for(int i=0; i<buffer_length; i++) line_buffer[i] = '\0';
 	kout << "> " << end;
 
+	//kout.t_color = RGB_24(128, 128, 128);
+
 	int cursorX, cursorY;
 
 	kout.getCursorPos(cursorX, cursorY);
-	kout.getCharacter(cursorX, cursorY)->attribute = kout.attribute(CGA_Color::LIGHT_GREY, CGA_Color::BLACK, true);
+	//kout.getCharacter(cursorX, cursorY)->attribute = kout.attribute(CGA_Color::LIGHT_GREY, CGA_Color::BLACK, true);
+	kout.show(cursorX, cursorY, '_', ~CGA::STD_ATTR);
 
 	while (1) {
 		dbgString = "1";
@@ -30,12 +33,19 @@ void SessionManager::main() {
 		if (event.type == EventType::KEY_DOWN && event.keyEvent.has_key) {
 			dbgString = "2";
 			kout.getCursorPos(cursorX, cursorY);
-			kout.getCharacter(cursorX, cursorY)->attribute = CGA::STD_ATTR;
+			//kout.getCharacter(cursorX, cursorY)->attribute = CGA::STD_ATTR
 			//cpu.disable_int();
 			kout.clearLine(cursorY);
 			//cpu.enable_int();
 			kout.setCursorPos(0, cursorY);
 			cursorX -= 2; // detract prompt
+
+			/*char cursorChar = ' ';
+			if (cursorX < current_length) {
+				cursorChar = line_buffer[cursorX];
+			}
+			kout.show(cursorX+2, cursorY, cursorChar, CGA::STD_ATTR);*/
+
 
 			Key key = event.keyEvent.key;
 			dbgString = "3";
@@ -82,7 +92,9 @@ void SessionManager::main() {
 			kout << "> " << line_buffer << end;
 			kout.setCursorPos(cursorX+2, cursorY);
 			kout.getCursorPos(cursorX, cursorY);
-			kout.getCharacter(cursorX, cursorY)->attribute = ~CGA::STD_ATTR;
+
+			kout.show(cursorX, cursorY, '_', CGA::STD_ATTR);
+			//kout.getCharacter(cursorX, cursorY)->attribute = ~CGA::STD_ATTR;
 			dbgString = "7";
 		}
 

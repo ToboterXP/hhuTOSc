@@ -29,7 +29,9 @@ public:
 };
 
 int main() {
+
     kout.clear();
+    kout.t_color = RGB_24(180, 180, 180);
 
     kout << "Welcome to hhuTOSc" << endl;
 

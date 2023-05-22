@@ -139,6 +139,7 @@ void Scheduler::disposeKilledThreads() {
  *****************************************************************************/
 
 void Scheduler::yield () {
+    if (!active) return;
     lock.waitForAcquire();
     cpu.disable_int();
     insecure_yield();

@@ -24,21 +24,25 @@
  * Rückgabewerte:   f:   Frequenz des Tons                                   *
  *                  len: Laenge des Tons in ms                               *
  *****************************************************************************/
+
+ void PCSPK::playFrequency (float f) {
+     int freq = (int)f;
+     int cntStart  =  1193180 / freq;
+     int status;
+
+
+     // Zaehler laden
+     control.outb (0xB6);            // Zaehler-2 konfigurieren
+     data2.outb (cntStart%256);      // Zaehler-2 laden (Lobyte)
+     data2.outb (cntStart/256);      // Zaehler-2 laden (Hibyte)
+
+     // Lautsprecher einschalten
+     status = (int)ppi.inb ();       // Status-Register des PPI auslesen
+     ppi.outb ( status|3 );          // Lautpsrecher Einschalten
+ }
+
 void PCSPK::play (float f, int len) {
-    int freq = (int)f;
-    int cntStart  =  1193180 / freq;
-    int status;
-
-
-    // Zaehler laden
-    control.outb (0xB6);            // Zaehler-2 konfigurieren
-    data2.outb (cntStart%256);      // Zaehler-2 laden (Lobyte)
-    data2.outb (cntStart/256);      // Zaehler-2 laden (Hibyte)
-
-    // Lautsprecher einschalten
-    status = (int)ppi.inb ();       // Status-Register des PPI auslesen
-    ppi.outb ( status|3 );          // Lautpsrecher Einschalten
-
+    playFrequency(f);
     // Pause
     delay(len);
 

@@ -85,6 +85,7 @@ public:
 
     // Ton abspielen
     void play (float f, int len);
+    void playFrequency (float f);
 
     // Verzoegerung um X ms (in 1ms Schritten; Min. 1ms)
     void delay (int time);

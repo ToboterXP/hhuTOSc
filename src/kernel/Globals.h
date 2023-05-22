@@ -16,7 +16,7 @@
 #include "kernel/allocator/BumpAllocator.h"
 #include "kernel/allocator/LinkedListAllocator.h"
 #include "devices/PCSPK.h"
-#include "devices/CGA_Stream.h"
+#include "devices/VGA_Stream.h"
 #include "devices/Keyboard.h"
 #include "kernel/interrupts/IntDispatcher.h"
 #include "kernel/threads/Scheduler.h"

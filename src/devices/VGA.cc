@@ -35,15 +35,23 @@ int abs(int a);
  *---------------------------------------------------------------------------*
  * Beschreibung:    Initialisierung verschiedener Instanzvariablen.          *
  *****************************************************************************/
-VGA::VGA () { 
+VGA::VGA () : graphics_lock(1) {
    mode = BUFFER_VISIBLE;
-   
-   // Variablen Für Textausgabe mit Stream-Operator, siehe 'print' 
+
+   // Variablen Für Textausgabe mit Stream-Operator, siehe 'print'
    t_xpos    = 0;
-   t_ypos    = 0;        
-   t_fnt     = &std_font_8x8;
+   t_ypos    = 0;
+   t_fnt     = &std_font_8x16;
    t_color   = RGB_24(0, 255, 0);
    t_line_space = 2;
+}
+
+void VGA::AcquireGraphicsLock() {
+    graphics_lock.acquire();
+}
+
+void VGA::ReleaseGraphicsLock() {
+    graphics_lock.release();
 }
 
 
@@ -53,7 +61,7 @@ VGA::VGA () {
  * Beschreibung:    Setter, um die Grafik-Modus-Infos zu speichern. Wird in  *
  *                  'Multiboot.c' gerufen, bevor 'main' angesprungen wird.   *
  *****************************************************************************/
-void VGA::set_graphic_infos(uint64_t lfb, uint32_t xres, uint32_t yres, 
+void VGA::set_graphic_infos(uint64_t lfb, uint32_t xres, uint32_t yres,
                             uint32_t pitch, uint32_t bpp) {
    this->lfb   = lfb;
    this->xres  = xres;
@@ -61,7 +69,7 @@ void VGA::set_graphic_infos(uint64_t lfb, uint32_t xres, uint32_t yres,
    this->pitch = pitch;
    this->bpp   = bpp;
    graphic_mode_active = true;
-}  
+}
 
 
 /*****************************************************************************
@@ -79,8 +87,8 @@ void VGA::set_graphic_infos(uint64_t lfb, uint32_t xres, uint32_t yres,
  *      fg          Foreground color                                         *
  *      blink       ywa/no                                                   *
  *****************************************************************************/
-uint8_t VGA::attribute (CGA::color bg, CGA::color fg, bool blink) {
-   return 0;
+uint8_t VGA::attribute (uint8_t bg, uint8_t fg, bool blink) {
+   return fg | ((bg & 0b111) << 4) | ((blink ? 1:0) << 7);
 }
 
 
@@ -98,14 +106,25 @@ uint8_t VGA::attribute (CGA::color bg, CGA::color fg, bool blink) {
 void VGA::show (uint32_t x, uint32_t y, char character, uint8_t attrib) {
     int t_xpos_saved = t_xpos;
     int t_ypos_saved = t_ypos;
-    
-    setpos(x, y);
-    
-    drawMonoBitmap( t_xpos, t_ypos, 
+
+    setCursorPos(x, y);
+
+    drawMonoBitmap( t_xpos, t_ypos,
                     t_fnt->get_char_width(), t_fnt->get_char_height(),
                     t_fnt->getChar( character ), RGB_24(255,255,255));
 
-    setpos(t_xpos_saved, t_ypos_saved);
+    t_xpos = t_xpos_saved;
+    t_ypos = t_ypos_saved;
+}
+
+void VGA::clearLine(int y, unsigned char attrib) {
+    int startY = y * (t_fnt->get_char_height() + t_line_space);
+    int stopY = startY + t_fnt->get_char_height() + t_line_space;
+    for (int x = 0; x < xres; x++) {
+        for (int ny = startY; ny < stopY; ny++) {
+            drawPixel(x, ny, 0);
+        }
+    }
 }
 
 
@@ -124,7 +143,7 @@ void VGA::drawFilledCircle( uint32_t x0, uint32_t y0, uint32_t r,  uint32_t col)
     int xChange = 1 - (r << 1);
     int yChange = 0;
     int radiusError = 0;
-    
+
 	if (isGraphicOn()==false) return ;
 
     while (x >= y) {
@@ -136,7 +155,7 @@ void VGA::drawFilledCircle( uint32_t x0, uint32_t y0, uint32_t r,  uint32_t col)
             drawPixel(i, y0 + x, col);
             drawPixel(i, y0 - x, col);
         }
-        
+
         y++;
         radiusError += yChange;
         yChange += 2;
@@ -161,14 +180,14 @@ void VGA::drawFilledCircle( uint32_t x0, uint32_t y0, uint32_t r,  uint32_t col)
  * Beschreibung:    Gibt die gegebene Rastergrafik an der Position           *
  *                  x,y zeilenweise aus. (x,y) ist der linke obere Punkt;    *
  *****************************************************************************/
-void VGA::drawBitmap ( uint32_t x, uint32_t y, uint32_t width, uint32_t height, 
+void VGA::drawBitmap ( uint32_t x, uint32_t y, uint32_t width, uint32_t height,
                        uint8_t *bitmap, uint32_t bpp ) {
 
     uint32_t  xpos = x;
     uint32_t  ypos = y;
     uint32_t  r,g,b;
     uint32_t  idx = 0;
-  
+
     for (y=0; y<height; ++y) {
         for (x=0; x<width; ++x) {
             r = bitmap[idx];
@@ -189,22 +208,27 @@ void VGA::drawBitmap ( uint32_t x, uint32_t y, uint32_t width, uint32_t height,
  *                                                                           *
  * Parameter:                                                                *
  *      char_x      x-Position in Zeichen                                    *
- *      char_y      y-Position in Zeichen                                    *   
+ *      char_y      y-Position in Zeichen                                    *
  *****************************************************************************/
-void VGA::setpos(uint32_t char_x, uint32_t char_y) {
+void VGA::setCursorPos(uint32_t char_x, uint32_t char_y) {
    if (isGraphicOn()==false) return ;
 
    uint32_t t_line_height = t_fnt->get_char_height() + t_line_space;
 
    t_xpos = char_x * t_fnt->get_char_width();
    if (t_xpos > (xres - t_fnt->get_char_width()) ) {
-	   t_xpos = xres - t_fnt->get_char_width(); 
+	   t_xpos = xres - t_fnt->get_char_width();
    }
-   
+
    t_ypos = char_y * t_line_height;
    if (t_ypos > (yres - t_line_height) ) {
-	   t_ypos = yres - t_line_height; 
+	   t_ypos = yres - t_line_height;
    }
+}
+
+void VGA::getCursorPos (int& x, int& y) {
+    x = t_xpos/t_fnt->get_char_width();
+    y = t_ypos/(t_fnt->get_char_height() + t_line_space);
 }
 
 
@@ -231,12 +255,12 @@ void VGA::print (char* string, uint32_t n) {
                 t_ypos += t_line_height;
                 break;
             default:
-          		drawMonoBitmap( t_xpos, t_ypos, 
+          		drawMonoBitmap( t_xpos, t_ypos,
           		                t_fnt->get_char_width(), t_fnt->get_char_height(),
                                 t_fnt->getChar( *string ), t_color);
 
                 t_xpos += t_fnt->get_char_width();
-                
+
                 if (t_xpos >= xres) {
                     t_xpos =  0;
                     t_ypos += t_line_height;
@@ -244,7 +268,7 @@ void VGA::print (char* string, uint32_t n) {
                 break;
         }
         string++;
-        
+
         if (t_ypos >= yres) {
 //            scrollup();
             t_ypos -= t_line_height;
@@ -272,13 +296,13 @@ void VGA::print (char* string, uint32_t n) {
  *                  sich in den C-Dateien in fonts/ von selbst.              *
  *****************************************************************************/
 inline void VGA::drawMonoBitmap( uint32_t x, uint32_t y, uint32_t width,
-                                 uint32_t height, uint8_t *bitmap, 
+                                 uint32_t height, uint8_t *bitmap,
                                  uint32_t color) {
     // Breite in Bytes
     uint16_t width_byte = width/8 + ((width%8 != 0) ? 1 : 0);
 
 	if (isGraphicOn()==false) return ;
-    
+
     for(uint32_t yoff=0; yoff<height; ++yoff) {
         int xpos=x;
         int ypos=y+yoff;
@@ -307,10 +331,10 @@ inline void VGA::drawMonoBitmap( uint32_t x, uint32_t y, uint32_t width,
  * Beschreibung:    Gibt eine Zeichenkette mit gewaehlter Schrift an der     *
  *                  Position x,y aus.                                        *
  *****************************************************************************/
-void VGA::drawString(Font *fnt, uint32_t x, uint32_t y,  
+void VGA::drawString(Font *fnt, uint32_t x, uint32_t y,
                       uint32_t col, char* str, uint32_t len) {
     uint32_t i;
-        
+
     for (i = 0; i < len; ++i) {
 		drawMonoBitmap(x, y, fnt->get_char_width(), fnt->get_char_height(),
                        fnt->getChar( *(str+i) ), col);
@@ -323,12 +347,12 @@ void VGA::drawString(Font *fnt, uint32_t x, uint32_t y,
  * Methode:         VGA::drawLineMajorAxis                                   *
  *---------------------------------------------------------------------------*
  * Beschreibung:    Internal method used by 'drawLine'                       *
- *                  X and Y are flipped for Y maxor axis lines, but the      * 
- *                  pixel writes are handled correctly due to minor and      * 
+ *                  X and Y are flipped for Y maxor axis lines, but the      *
+ *                  pixel writes are handled correctly due to minor and      *
  *                  major axis pixel movement.                               *
- *                                                                           * 
+ *                                                                           *
  *                  Der Code fuer das Zeichnen der Linie ist von Alan Wolfe  *
- * Siehe:  https://blog.demofox.org/2015/01/17/bresenhams-drawing-algorithms * 
+ * Siehe:  https://blog.demofox.org/2015/01/17/bresenhams-drawing-algorithms *
  *****************************************************************************/
 void VGA::drawLineMajorAxis(
     uint8_t *pixel,
@@ -346,21 +370,21 @@ void VGA::drawLineMajorAxis(
 	  const uint32_t bytes_per_pixel = bpp/8;
 
     if (isGraphicOn()==false) return ;
- 
- 
+
+
     // calculate the starting error value
     int Error = dy2 - dx;
- 
+
     // draw the first pixel
     setPixelDirect(pixel, color);
- 
-    
+
+
     // loop across the major axis
     while (dx--) {
         // move on major axis and minor axis
         if (Error > 0) {
 					  int offset = (majorAxisPixelMovement + minorAxisPixelMovement) * bytes_per_pixel;
- 
+
    				  pixel += offset;
             Error += dy2Mindx2;
         }
@@ -375,8 +399,8 @@ void VGA::drawLineMajorAxis(
         setPixelDirect(pixel, color);
     }
 }
- 
- 
+
+
 /*****************************************************************************
  * Methode:         VGA::drawLineSingleAxis                                  *
  *---------------------------------------------------------------------------*
@@ -385,17 +409,17 @@ void VGA::drawLineMajorAxis(
  *                  vertical lines. X and Y are flipped for Y maxor axis     *
  *                  lines, but the pixel writes are handled correctly due to *
  *                  minor and major axis pixel movement.                     *
- *                                                                           * 
+ *                                                                           *
  *                  Der Code fuer das Zeichnen der Linie ist von Alan Wolfe  *
- * Siehe:  https://blog.demofox.org/2015/01/17/bresenhams-drawing-algorithms * 
+ * Siehe:  https://blog.demofox.org/2015/01/17/bresenhams-drawing-algorithms *
  *****************************************************************************/
-void VGA::drawLineSingleAxis( uint8_t *pixel, 
-                              int majorAxisPixelMovement, 
+void VGA::drawLineSingleAxis( uint8_t *pixel,
+                              int majorAxisPixelMovement,
                               int dx, uint32_t color) {
 	const uint32_t  bytes_per_pixel = bpp/8;
 
 	if (isGraphicOn()==false) return ;
-	
+
     // draw the first pixel
     setPixelDirect(pixel, color);
 
@@ -405,7 +429,7 @@ void VGA::drawLineSingleAxis( uint8_t *pixel,
         setPixelDirect(pixel, color);
     };
 }
- 
+
 
 /*****************************************************************************
  * Methode:         VGA::drawLine                                            *
@@ -413,13 +437,13 @@ void VGA::drawLineSingleAxis( uint8_t *pixel,
  * Beschreibung:    Draw an arbitrary line.  Assumes start and end point are *
  *                  within valid range. 'pixels' is a pointer to where the   *
  *                  pixels you want to draw to start aka (0,0)               *
- *                                                                           * 
+ *                                                                           *
  *                  Der Code fuer das Zeichnen der Linie ist von Alan Wolfe  *
- * Siehe:  https://blog.demofox.org/2015/01/17/bresenhams-drawing-algorithms * 
+ * Siehe:  https://blog.demofox.org/2015/01/17/bresenhams-drawing-algorithms *
  *****************************************************************************/
-void VGA::drawLine(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, 
+void VGA::drawLine(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2,
                    uint32_t color) {
-	  uint8_t *pixels = (uint8_t *) lfb; 
+	  uint8_t *pixels = (uint8_t *) lfb;
 	  const uint32_t  bytes_per_pixel = bpp/8;
 	  const uint32_t  bytes_per_line = xres*bpp/8;
 
@@ -427,26 +451,26 @@ void VGA::drawLine(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2,
 	  if (isGraphicOn()==false) return ;
 
     // check boundaries
-    if (x1 < 0)     x1 = 0; 
+    if (x1 < 0)     x1 = 0;
     if (x1 >= xres) x1 = xres - 1;
-  
-    if (x2 < 0)     x2 = 0; 
+
+    if (x2 < 0)     x2 = 0;
     if (x2 >= xres) x2 = xres - 1;
 
-    if (y1 < 0)     y1 = 0; 
+    if (y1 < 0)     y1 = 0;
     if (y1 >= yres) y1 = yres - 1;
 
-    if (y2 < 0)     y2 = 0; 
+    if (y2 < 0)     y2 = 0;
     if (y2 >= yres) y2 = yres - 1;
-  
-  
-  
+
+
+
     if (mode == 0) pixels = (uint8_t *) hfb;
-	
+
     // calculate our deltas
     int dx = x2 - x1;
     int dy = y2 - y1;
- 
+
     // if the X axis is the major axis
     if (abs(dx) >= abs(dy)) {
         // if x2 < x1, flip the points to have fewer special cases
@@ -456,10 +480,10 @@ void VGA::drawLine(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2,
             swap(&x1, &x2);
             swap(&y1, &y2);
         }
- 
+
         // get the address of the pixel at (x1,y1)
         uint8_t *startPixel = &pixels[ y1*bytes_per_line + x1*bytes_per_pixel];
-        
+
         // determine special cases
         if (dy > 0)
             drawLineMajorAxis(startPixel, 1, xres, dx, dy, color);
@@ -467,7 +491,7 @@ void VGA::drawLine(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2,
             drawLineMajorAxis(startPixel, 1, -xres, dx, -dy, color);
         else
             drawLineSingleAxis(startPixel, 1, dx, color);
-         
+
     }
     // else the Y axis is the major axis
     else {
@@ -478,10 +502,10 @@ void VGA::drawLine(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2,
             swap(&x1, &x2);
             swap(&y1, &y2);
         }
- 
+
         // get the address of the pixel at (x1,y1)
         uint8_t *startPixel = &pixels[ y1*bytes_per_line + x1*bytes_per_pixel];
- 
+
         // determine special cases
         if (dx > 0)
             drawLineMajorAxis(startPixel, xres, 1, dy, dx, color);
@@ -503,15 +527,15 @@ void VGA::drawLine(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2,
  *****************************************************************************/
 void VGA::drawPixel(uint32_t x, uint32_t y,uint32_t col) {
     uint8_t *ptr = (uint8_t *) lfb;
-    
+
 	if (isGraphicOn()==false) return ;
 
     if (mode == 0) ptr = (uint8_t *) hfb;
-    
+
     // Pixel ausserhalb des sichtbaren Bereichs?
     if (x<0 || x>=xres || y<0 || y>yres)
         return;
-    
+
     // Adresse des Pixels berechnen und Inhalt schreiben
     switch (bpp) {
         case 8:
@@ -548,9 +572,9 @@ void VGA::setPixelDirect(uint8_t *ptr, uint32_t col) {
 
 	if (isGraphicOn()==false) return ;
 
-  // check mem boundaries	
+  // check mem boundaries
  	if ( (uint64_t)ptr > (lfb + xres*yres*bpp) ) return ;
-   
+
     // Adresse des Pixels berechnen und Inhalt schreiben
     switch (bpp) {
         case 8:
@@ -583,11 +607,11 @@ void VGA::clear() {
     uint32_t *ptr = (uint32_t *)lfb;
     uint32_t i;
 
-    
+
 	if (isGraphicOn()==false) return ;
 
     if (mode == 0) ptr = (uint32_t *) hfb;
-    
+
     switch (bpp) {
         case 8:
             for (i=0; i < ((xres/4)*yres); i++)
@@ -617,7 +641,7 @@ void VGA::clear() {
  *****************************************************************************/
 void VGA::setDrawingBuff(int v) {
    if (isGraphicOn()==false) return ;
-   
+
    mode = v;
 }
 
@@ -631,7 +655,7 @@ void VGA::copyHiddenToVisible() {
     uint32_t *sptr = (uint32_t *)hfb;
     uint32_t *dptr = (uint32_t *)lfb;
     uint32_t i;
-    
+
 	if (isGraphicOn()==false) return ;
 
     switch (bpp) {
@@ -659,9 +683,9 @@ void VGA::copyHiddenToVisible() {
 // Hilfsfunktion: Dreieckstausch
 void swap(uint32_t *a, uint32_t *b) {
    uint32_t h;
-   
+
    h = *a;
-   
+
    *a = *b;
    *b = h;
 }
@@ -671,4 +695,3 @@ int abs(int a) {
 	if (a<0) return -a;
 	return a;
 }
-
