@@ -38,6 +38,6 @@ extern Scheduler        scheduler;  // Scheduler
 extern volatile uint64_t              systime;    // wird all 10ms hochgezaehlt
 extern PIT                   pit;        // Zeitgeber
 
+extern char * dbgString;
 
-extern void InitTimer();
 #endif

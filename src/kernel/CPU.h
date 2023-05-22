@@ -21,18 +21,18 @@ class CPU {
 private:
     CPU(const CPU &copy);   // Verhindere Kopieren
 
-
 public:
     int interruptDisableCount = 0;
     CPU() {}
 
    // Interrupts erlauben
    inline void enable_int() {
-      interruptDisableCount--;
+       asm volatile("sti\n\t nop\n\t" : : : "memory");
+      /*interruptDisableCount--;
       if (interruptDisableCount <= 0) {
           interruptDisableCount = 0;
           asm volatile("sti\n\t nop\n\t" : : : "memory");
-      }
+      }*/
 
    }
 
@@ -57,7 +57,7 @@ public:
 		: "memory"
 	  );
 
-      interruptDisableCount++;
+      //interruptDisableCount++;
 
 	  bool enabled = (out & 0x200) != 0;
 	  return enabled;

@@ -32,15 +32,36 @@ extern "C" void int_disp (unsigned int vector);
  *****************************************************************************/
 void int_disp (unsigned int vector) {
 
-    cpu.disable_int();
     //kout << "Int "<< dec << vector <<endl;
+    //cpu.disable_int();
+    if (vector < 32) {
+        kout.setCursorPos(0,0);
+        pcspk.off();
+        kout <<dbgString <<" Error "<< dec << vector <<endl;
 
-    if (intdis.report(vector) != 0) {
-        if (vector < 32) kout << "Error "<< dec << vector <<endl;
+        uint64_t ** current_bp;
+        __asm__ __volatile__(
+           "movq %%rbp, %0\n\t"
+           : "=r"(current_bp)
+         );
+         kout << "RBP: "<< hex<<current_bp << endl;
+         for (int i=0; i<8; i++) {
+             for (int j=0;j<8; j++) {
+                 kout << *(current_bp++)<< " ";
+             }
+             kout << endl;
+         }
+
         cpu.die();
     }
 
-    cpu.enable_int();
+    char* prevDbg = dbgString;
+    dbgString = "Interrupt";
+
+    intdis.report(vector);
+
+    dbgString = prevDbg;
+    //cpu.enable_int();
 }
 
 

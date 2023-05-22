@@ -26,6 +26,7 @@
 #include "lib/Types.h"
 #include "kernel/threads/Thread.h"
 #include "lib/List.h"
+#include "lib/SpinLock.h"
 
 class Scheduler{
 
@@ -45,16 +46,22 @@ private:
 
     void disposeKilledThreads();
 
-public:
-    Scheduler ();
+    SpinLock lock;
 
+    // CPU freiwillig abgeben und Auswahl des naechsten Threads
+    void insecure_yield ();
+
+public:
+    Scheduler () {}
+
+    /*
     // Scheduler initialisiert?
     // Zeitgeber-Unterbrechung kommt evt. bevor der Scheduler fertig
     // intiialisiert wurde!
     bool isInitialized() { return initialized; }
 
     // ruft nur der Idle-Thread (erster Thread der vom Scheduler gestartet wird)
-    void setInitialized() { initialized = true; }
+    void setInitialized() { initialized = true; }*/
 
     // Scheduler starten
     void schedule ();
@@ -76,7 +83,7 @@ public:
     void block ();
 
     // 'that' wieder in die Ready-Queue einfuegen
-    void deblock (Thread &that);
+    void unblock (Thread *that);
 
 
     void preempt();

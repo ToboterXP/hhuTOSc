@@ -27,7 +27,6 @@ void PIT::init () {
 
 
     timer = 1193182 * interval / 1000000;
-    kout << timer <<endl;
 
     trigger();//properly set the timers
 }
@@ -43,10 +42,13 @@ void PIT::init () {
  *****************************************************************************/
 
 void PIT::trigger () {
+    dbgString = "PIT";
     //restart timer
     control.outb(0b00110000); //Timer 0, Lowbyte/Hibyte, IRQ on terminal count
     data0.outb(timer);
     data0.outb(0);
+
+    if (!allocator.is_available()) return;
 
     //uint64_t current_timer = base_timer++;
 
@@ -54,6 +56,10 @@ void PIT::trigger () {
 
     if(base_timer % 6 == 0) systime++;
     if(base_timer % 6 == 0) scheduler.preempt();
+
+    //kout.show(79, 0, 0x30 + base_timer%0x50);
+
+
 
 
     /*cpu.force_enable_int();

@@ -23,7 +23,7 @@ template <typename S> friend class List;
 template <typename T> class List {
 private:
 
-
+	int length = 0;
 	T error_value;
 public:
 	ListBlock<T> * first = NULL;
@@ -49,6 +49,8 @@ public:
 
 			last = newBlock;
 		}
+
+		length++;
 	}
 
 	//Adds an object to the start of the list
@@ -63,6 +65,7 @@ public:
 
 			first = newBlock;
 		}
+		length++;
 	}
 
 	//returns the first or last block of the list
@@ -81,6 +84,7 @@ public:
 		first = retBlock->next;
 		if  (first == NULL) last = NULL;
 		delete retBlock;
+		length--;
 
 		return ret;
 	}
@@ -97,6 +101,7 @@ public:
 		last = retBlock->prev;
 		if  (last == NULL) first = NULL;
 		delete retBlock;
+		length--;
 
 		return ret;
 	}
@@ -107,11 +112,17 @@ public:
 
 		if (block->prev) block->prev->next = block->next;
 		if (block->next) block->next->prev = block->prev;
+		delete block;
+		length--;
 	}
 
 	//returns whether the list is empty
 	bool is_empty() {
 		return first == NULL;
+	}
+
+	int get_length() {
+		return length;
 	}
 };
 

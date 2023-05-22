@@ -4,7 +4,7 @@
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Beschreibung:    Die Klasse StringBuffer stellt einen Puffer fuer die     *
- *                  Sammlung von Zeichen zur Darstellung auf dem Bildschirm  * 
+ *                  Sammlung von Zeichen zur Darstellung auf dem Bildschirm  *
  *                  oder anderen Ausgabegeraeten bereit. Die Ausgabe der     *
  *                  Zeichen erfolgt, sobald der Puffer voll ist oder wenn    *
  *                  explizit die Methode flush() aufgerufen wird.            *
@@ -19,7 +19,7 @@
 #define __StringBuffer_include__
 
 class StringBuffer {
-    
+
 private:
     StringBuffer(const StringBuffer &copy); // Verhindere Kopieren
 
@@ -41,7 +41,7 @@ protected:
 
     // Methode zur Ausgabe des Pufferinhalts
     virtual void flush () = 0;
-    
+
 };
 
 #endif

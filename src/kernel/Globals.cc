@@ -25,24 +25,26 @@ Scheduler             scheduler;  // Scheduler
 volatile uint64_t              systime=0;  // Millisekunden seit Systemstart
 PIT                   pit; // Zeitgeber
 
-/*extern "C" void IncrementSysTime();
+char * dbgString = "";
 
-void IncrementSysTime() {
-	systime++;
-}
-
-void InitTimer() {
-	pit.AddTimer(1000, &IncrementSysTime);
-}*/
 
 
 extern "C" void dbgPrint();
-extern "C" void dbgPrintValue();
+extern "C" void dbgPrint2();
+extern "C" void dbgPrintValue(uint32_t a);
 
 void dbgPrint() {
 	kout << "Hi" << endl;
+	//dbgString = "dbg1";
 	return;
 }
+
+void dbgPrint2() {
+	kout << "Hi2" << endl;
+	//dbgString = "dbg1";
+	return;
+}
+
 
 void dbgPrintValue(uint32_t a) {
 	kout << hex << a << endl;

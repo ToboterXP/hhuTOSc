@@ -34,6 +34,8 @@ extern "C"
 
 uint32_t Thread::next_tid = 0;
 
+#define STACK_SIZE 4096
+
 
 /*****************************************************************************
  * Prozedur:        Thread_init                                           *
@@ -64,6 +66,7 @@ void Thread_init (uint64_t **stackptr, uint64_t *stack,
     *(--sp) = (uint64_t)kickoff;  // Adresse
 
     // Nun sichern wir noch alle relevanten Register auf dem Stack
+    *(--sp) = cpu.getflags(); // flags
     *(--sp) = 0;    	// r8
     *(--sp) = 0;   		// r9
     *(--sp) = 0;   		// r10
@@ -80,7 +83,7 @@ void Thread_init (uint64_t **stackptr, uint64_t *stack,
     *(--sp) = 0;   		// rsi
     *(--sp) = (uint64_t)object; 	// rdi -> 1. Param fuer 'kickoff'
     *(--sp) = 0;   		// rbp
-    *(--sp) = cpu.getflags(); // flags
+
 
     // Zum Schluss speichern wir den Zeiger auf den zuletzt belegten
     // Eintrag auf dem Stack in 'stackptr'. Daruber gelangen wir in
@@ -100,8 +103,9 @@ void Thread_init (uint64_t **stackptr, uint64_t *stack,
  *                  interpretiert werden und der Rechner abstuerzen.         *
  *****************************************************************************/
 void kickoff (Thread* object) {
-    object->run();
+    object->main();
 
+    scheduler.exit();
     // object->run() kehrt hoffentlich nie hierher zurueck
     for (;;) {}
 }
@@ -118,12 +122,21 @@ void kickoff (Thread* object) {
 Thread::Thread () {
     tid = Thread::next_tid++;
 
-    this->stack = new uint64_t[1024];
-    Thread_init (&context, stack + sizeof(uint64_t[1024]), kickoff, this);
+    this->stack = new uint64_t[STACK_SIZE];
+    Thread_init (&context, stack + sizeof(uint64_t[STACK_SIZE]) - 1 , kickoff, this);
+ }
+
+ uint64_t Thread::getStackSize() {
+     return STACK_SIZE*sizeof(uint64_t) - (context - stack);
  }
 
  void Thread::free() {
+     _hasTerminated = true;
      delete stack;
+ }
+
+ bool Thread::hasTerminated() {
+     return _hasTerminated;
  }
 
 
@@ -133,7 +146,11 @@ Thread::Thread () {
  * Beschreibung:    Auf die nächste Koroutine umschalten.                    *
  *****************************************************************************/
 void Thread::switchTo (Thread* next) {
-    Thread_switch(&context, &next->context);
+    //uint64_t next_addr = *(next->context+16);
+    //kout << hex << context <<" "<< next->context<<" "<< next_addr << endl;
+    /*if (next_addr > 0x200000) kout << "Hmmmmmmm" << endl;*/
+    //kout << &(next->context) << endl;
+    Thread_switch(&context, &(next->context));
 }
 
 

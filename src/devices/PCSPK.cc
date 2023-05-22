@@ -89,9 +89,10 @@ inline unsigned int PCSPK::readCounter() {
  *****************************************************************************/
 //__attribute__((optimize("O0"))) void PCSPK::delay (int time);
 void PCSPK::delay (int time) {
+    dbgString = "E";
     uint64_t start = systime;
-    kout <<"";
-    while (systime < start+time) {}
+    //kout <<"";
+    while (systime < start+time) {scheduler.yield();}
 }
 
 
@@ -102,6 +103,7 @@ void PCSPK::delay (int time) {
  *                  https://gist.github.com/XeeX/6220067                     *
  *****************************************************************************/
 void PCSPK::tetris () {
+    dbgString = "D";
     play(658, 125);
     play(1320, 500);
     play(990, 250);

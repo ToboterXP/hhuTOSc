@@ -12,6 +12,7 @@
  *                  Aenderungen von Michael Schoettner, HHU, 21.8.2016       *
  *****************************************************************************/
 #include "devices/CGA.h"
+#include "kernel/Globals.h"
 
 
 int CGA::readRegister(uint8_t index) {
@@ -25,6 +26,19 @@ void CGA::writeRegister(uint8_t index, uint8_t value) {
     data_port.outb(value);
 }
 
+/*bool CGA::HasGraphicsLock() {
+    return !scheduler.get_active() || graphics_lock.has_acquired(scheduler.get_active());
+}*/
+
+
+void CGA::AcquireGraphicsLock() {
+    graphics_lock.acquire();
+}
+
+void CGA::ReleaseGraphicsLock() {
+    graphics_lock.release();
+}
+
 
 /*****************************************************************************
  * Methode:         CGA::setCursorPos                                              *
@@ -32,6 +46,7 @@ void CGA::writeRegister(uint8_t index, uint8_t value) {
  * Beschreibung:    Setzen des Cursors in Spalte x und Zeile y.              *
  *****************************************************************************/
 void CGA::setCursorPos (int x, int y) {
+
     if (x < 0 || x >= COLUMNS || y < 0 || y >= ROWS) return;
     int offset = x + y * COLUMNS;
 
@@ -48,6 +63,7 @@ void CGA::setCursorPos (int x, int y) {
  * Rückgabewerte:   x und y                                                  *
  *****************************************************************************/
 void CGA::getCursorPos (int &x, int &y) {
+
     int high = readRegister(14);
     int low = readRegister(15);
     int offset = (high<<8) | low;
@@ -79,6 +95,7 @@ void CGA::show (int x, int y, char character, unsigned char attrib) {
 
 
 void CGA::printNewline(int n) {
+
     int cursorX, cursorY;
     getCursorPos(cursorX, cursorY);
 
@@ -107,6 +124,8 @@ void CGA::printNewline(int n) {
 void CGA::print (char* string, int n, unsigned char attrib) {
     int cursorX, cursorY;
 
+    
+
     for (int i=0; i<n; i++) {
         if (string[i] == '\n') printNewline();
         if (string[i] < 0x20) continue; //ignore control chars
@@ -129,7 +148,6 @@ void CGA::print (char* string, int n, unsigned char attrib) {
  *                  gefuellt.                                                *
  *****************************************************************************/
 void CGA::scrollup (unsigned char attrib) {
-
     for (int x = 0; x < COLUMNS; x++) {
         for (int y = 0; y < ROWS-1; y++) {
             (*CGA_DATA)[y][x] = (*CGA_DATA)[y+1][x];
@@ -148,6 +166,7 @@ void CGA::scrollup (unsigned char attrib) {
  * Beschreibung:    Lösche den Textbildschirm.                               *
  *****************************************************************************/
 void CGA::clear (unsigned char attrib) {
+
     for (int x = 0; x < COLUMNS; x++) {
         for (int y = 0; y < ROWS; y++) {
             (*CGA_DATA)[y][x].character = ' ';

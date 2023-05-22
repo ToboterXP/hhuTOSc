@@ -19,7 +19,7 @@
 #include "lib/OutStream.h"
 
 class CGA_Stream : public OutStream, public CGA {
-    
+
 private:
       CGA_Stream(CGA_Stream &copy); // Verhindere Kopieren
 

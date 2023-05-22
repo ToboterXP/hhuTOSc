@@ -16,6 +16,7 @@
 [GLOBAL Thread_switch]
 
 [EXTERN dbgPrint]
+[EXTERN dbgPrint2]
 [EXTERN dbgPrintValue]
 
 ; IMPLEMENTIERUNG DER FUNKTIONEN
@@ -29,7 +30,7 @@
 ; C Prototyp:     void Thread_start  (uint64_t* context);
 Thread_start:
 	mov rsp, rdi
-	popfq
+
 	pop rbp
 	pop rdi
 	pop rsi
@@ -45,7 +46,8 @@ Thread_start:
 	pop r10
 	pop r9
 	pop r8
-
+	popfq
+	sti
 	ret
 
 
@@ -57,6 +59,8 @@ Thread_start:
 ;
 ; C Prototyp:       Thread_switch (uint64_t** context_now, uint64_t** context_then);
 Thread_switch:
+	cli
+	pushfq
 	push r8
 	push r9
 	push r10
@@ -72,9 +76,13 @@ Thread_switch:
 	push rsi
 	push rdi
 	push rbp
-	pushfq
+
+
+
 
 	mov [rdi], rsp
 
 	mov rdi, [rsi]
-	jmp Thread_start
+
+	call Thread_start
+	ret

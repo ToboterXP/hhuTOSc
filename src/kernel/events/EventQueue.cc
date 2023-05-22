@@ -4,23 +4,25 @@
 
 
 void EventQueue::PushEvent(Event event) {
-	cpu.disable_int();
+	lock.waitForAcquire();
 
 	events.prepend(event);
 	eventCount++;
-	//kout << events.first << " " << events.last << endl;
 
-	cpu.enable_int();
+	if (eventCount > 10) events.pop_last();
+
+	lock.release();
 }
 
 Event EventQueue::PopEvent() {
-	cpu.disable_int();
+	if (eventCount == 0) return Event();
+
+	lock.waitForAcquire();
 
 	Event ret = events.pop_last();
-	eventCount--;
+	if (eventCount > 0) eventCount--;
 	//kout << events.first << " " << events.last << endl;
-
-	cpu.enable_int();
+	lock.release();
 
 	return ret;
 }
@@ -32,18 +34,16 @@ Event EventQueue::PeekEvent() {
 }
 
 void EventQueue::Flush() {
-	cpu.disable_int();
+	lock.waitForAcquire();
 
 	while(!events.is_empty()) events.pop_last();
 	eventCount = 0;
 
-	cpu.enable_int();
+	lock.release();
 }
 
 bool EventQueue::IsEmpty() {
-	cpu.disable_int();
 	bool ret = events.is_empty();
-	cpu.enable_int();
 
 	return ret;
 }

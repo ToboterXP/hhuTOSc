@@ -12,30 +12,41 @@
 #define __Semaphore_include__
 
 
-#include "lib/Queue.h"
+#include "lib/List.h"
 #include "lib/SpinLock.h"
+#include "kernel/threads/Thread.h"
 
 
 class Semaphore {
 
 private:
     Semaphore (const Semaphore &copy); // Verhindere Kopieren
-    
+
     // Queue fuer wartende Threads.
-    Queue waitQueue;
+    List<Thread*> waitQueue =  List<Thread*>(NULL);
+
+    //Liste aller aktuell nutzenden Threads
+    List<Thread*> acquiredList =  List<Thread*>(NULL);
     SpinLock lock;
+
+    SpinLock access_lock; //prevents simultaneous access
 
     int counter;
 
 public:
     // Konstruktor: Initialisieren des Semaphorzaehlers
-    Semaphore (int c) : counter (c) {}
+    Semaphore (int c) : counter(c) {}
 
     // 'Passieren': Warten auf das Freiwerden eines kritischen Abschnitts.
-    void p ();
+    void acquire ();
 
     // 'Vreigeben': Freigeben des kritischen Abschnitts.
-    void v ();
+    void release ();
+
+    //returns true if the given thread has acquired the semaphore
+    bool has_acquired(Thread * thread);
+
+    bool is_locked();
  };
 
 #endif

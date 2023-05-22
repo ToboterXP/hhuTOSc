@@ -276,6 +276,7 @@ void Keyboard::init() {
 }
 
 void Keyboard::trigger() {
+    dbgString = "Keyboard";
     code = data_port.inb();
     key_decoded();
 }
@@ -374,4 +375,8 @@ void Keyboard::set_led (char led, bool on) {
     leds = (leds & ~(1<<led)) | (on<<led);
 
     send_command(0xed, leds);
+}
+
+Key Keyboard::get_last_key() {
+    return gather;
 }

@@ -94,6 +94,8 @@ public:
 
    // Unterbrechnungsroutine der Tastatur.
    void trigger ();
+
+   Key get_last_key();
 };
 
 #endif

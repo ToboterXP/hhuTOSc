@@ -12,19 +12,26 @@ void LinkedListAllocator::init() {
 	list_start->is_free = true;
 	list_start->prev = NULL;
 	list_start->next = NULL;
+
+	list_end = list_start;
 }
 
 
 
 void LinkedListAllocator::dump_free_memory() {
-	kout << hex << "LinkedListAllocator start:"<<heap_start<<" end:"<<heap_end<<" list_start:"<<list_start<<endl;
+	lock.waitForAcquire();
+	kout << hex << "LinkedListAllocator start:"<<heap_start<<" end:"<<heap_end<<" list_start:"<<list_start<<" list_end:"<<list_end<<endl;
 	for (heap_block* current = list_start; current != NULL; current = current->next) {
 		kout << "block:"<<current<<" size:"<<current->size<<" free:"<<current->is_free<<" prev:"<<(current->prev)<<" next:"<<(current->next)<<endl;
 	}
+	lock.release();
 }
 
 
 void * LinkedListAllocator::alloc(uint32_t req_size) {
+	lock.waitForAcquire();
+	char* prevDbg = dbgString;
+    dbgString = "Alloc";
 	if (req_size < HEAP_MIN_FREE_BLOCK_SIZE) req_size = HEAP_MIN_FREE_BLOCK_SIZE;
 
 	heap_block* current = list_start;
@@ -40,14 +47,18 @@ void * LinkedListAllocator::alloc(uint32_t req_size) {
 				new_block->is_free = true;
 				new_block->prev = current;
 				new_block->next = current->next;
+				if (new_block->next != NULL) new_block->next->prev = new_block;
+
+
 
 				//link the list
 				current->size = req_size;
+				if (current == list_end) list_end = new_block;
+
 				current->next = new_block;
-
-				if (new_block->next != NULL) new_block->next->prev = new_block;
 			}
-
+			dbgString = prevDbg;
+			lock.release();
 			return (void*)(((uint8_t*)current) + sizeof(heap_block));
 		}
 
@@ -56,14 +67,19 @@ void * LinkedListAllocator::alloc(uint32_t req_size) {
 
 	kout << "Heap full" << endl;
 	dump_free_memory();
+	cpu.die();
 	return NULL;
 }
 
 
 void LinkedListAllocator::free(void *ptr) {
-
 	if (heap_start > ptr || heap_end <= ptr) return;
-	
+
+	lock.waitForAcquire();
+
+	char* prevDbg = dbgString;
+    dbgString = "Free";
+
 	heap_block* current = (heap_block*)((uint8_t*)ptr - sizeof(heap_block));
 	current->is_free = true;
 
@@ -77,8 +93,17 @@ void LinkedListAllocator::free(void *ptr) {
 		last_free = last_free->next;
 	}
 
+	if (last_free == list_end) list_end = first_free;
+
 	uint64_t total_size = (((uint8_t*)last_free) + sizeof(heap_block) + last_free->size) - (((uint8_t*)first_free) + sizeof(heap_block));
 	first_free->size = total_size;
+	if (last_free->next != NULL) last_free->next->prev = first_free;
 	first_free->next = last_free->next;
-	if (first_free->next != NULL) first_free->next->prev = first_free;
+
+	dbgString = prevDbg;
+	lock.release();
+}
+
+bool LinkedListAllocator::is_available() {
+	return !lock.isLocked();
 }

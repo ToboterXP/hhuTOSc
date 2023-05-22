@@ -2,6 +2,7 @@
 #define __LinkedListAllocator_include__
 
 #include "kernel/Allocator.h"
+#include "lib/SpinLock.h"
 
 
 // Format eines freien Blocks
@@ -18,8 +19,11 @@ class LinkedListAllocator : Allocator {
 private:
       heap_block *list_start;
 
+      heap_block *list_end;
+
       LinkedListAllocator(Allocator &copy); // Verhindere Kopieren
 
+      SpinLock lock;
 public:
       LinkedListAllocator () { }
 
@@ -27,6 +31,8 @@ public:
       virtual void dump_free_memory ();
       virtual void* alloc (uint32_t req_size);
       virtual void free (void *ptr);
+
+      bool is_available();
 
 };
 

@@ -4,11 +4,13 @@
 
 #include <lib/List.h>
 #include <kernel/events/Event.h>
+#include "lib/SpinLock.h"
 
 class EventQueue {
 private:
 	List<Event> events = List<Event>(Event(EventType::NONE)); //takes events that arrive through interrupts
 
+	SpinLock lock;
 public:
 
 	int eventCount = 0;

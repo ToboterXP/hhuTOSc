@@ -27,7 +27,7 @@
  *                  flush geleert.                                           *
  *                                                                           *
  * Parameter:                                                                *
- *      c:          Einzufuegendes Zeichen.                                  * 
+ *      c:          Einzufuegendes Zeichen.                                  *
  *****************************************************************************/
 void StringBuffer::put (char c) {
     buffer[pos] = c;
@@ -35,4 +35,3 @@ void StringBuffer::put (char c) {
     if (pos == sizeof (buffer))
         flush ();
  }
-

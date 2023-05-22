@@ -16,11 +16,11 @@
 /*****************************************************************************
  * Methode:         CAS				                                         *
  *---------------------------------------------------------------------------*
- * Parameter:       *ptr 	Adresse der Variable des Locks				     * 
- *        			old		Wert gegen den verglichen wird				     * 
- *        			_new	Wert der gesetzt werden soll				     * 
+ * Parameter:       *ptr 	Adresse der Variable des Locks				     *
+ *        			old		Wert gegen den verglichen wird				     *
+ *        			_new	Wert der gesetzt werden soll				     *
  *  																		 *
- * Beschreibung:    Semantik der Funktion CAS = Cmompare & Swap:		     * 
+ * Beschreibung:    Semantik der Funktion CAS = Cmompare & Swap:		     *
  *						if old == *ptr then									 *
  *   					    *ptr := _new									 *
  *  					return prev											 *
@@ -32,8 +32,8 @@ static inline unsigned long CAS(unsigned long *ptr, unsigned long old, unsigned 
     /*
         AT&T/UNIX assembly syntax
 
-        The 'volatile' keyword after 'asm' indicates that the instruction 
-        has important side-effects. GCC will not delete a volatile asm if 
+        The 'volatile' keyword after 'asm' indicates that the instruction
+        has important side-effects. GCC will not delete a volatile asm if
         sit is reachable.
      */
     asm volatile("lock;"                            /* prevent race conditions with other cores        */
@@ -49,20 +49,27 @@ static inline unsigned long CAS(unsigned long *ptr, unsigned long old, unsigned 
 /*****************************************************************************
  * Methode:         SpinLock::acquire                                        *
  *---------------------------------------------------------------------------*
- * Beschreibung:    Lock belegen.    									     * 
+ * Beschreibung:    Lock belegen.    									     *
  *****************************************************************************/
-void SpinLock::acquire() {
-    while (CAS(ptr, 0, 1) != 0);
+bool SpinLock::acquire() { //returns true if lock is currently locked
+    return CAS(ptr, 0, 1) != 0;
 }
+
+void SpinLock::waitForAcquire() {
+    while(!acquire());
+}
+
 
 
 /*****************************************************************************
  * Methode:         SpinLock::release                                        *
  *---------------------------------------------------------------------------*
- * Beschreibung:    Lock freigeben.    									     * 
+ * Beschreibung:    Lock freigeben.    									     *
  *****************************************************************************/
 void SpinLock::release() {
     lock = 0;
 }
 
-
+bool SpinLock::isLocked() {
+    return lock;
+}

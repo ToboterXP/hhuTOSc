@@ -16,6 +16,8 @@
 
 #include "kernel/IOport.h"
 #include "lib/Types.h"
+#include "lib/Semaphore.h"
+
 
 
 // Konstanten fuer die moeglichen Farben im Attribut-Byte.
@@ -61,6 +63,10 @@ private:
     int readRegister(uint8_t index);
     void writeRegister(uint8_t index, uint8_t value);
 
+    Semaphore graphics_lock;
+
+
+
 
 public:
     // Groesse des Bildschirms (25 Zeilen, 80 Spalten)
@@ -70,7 +76,7 @@ public:
     CGA_Char (*CGA_DATA)[ROWS][COLUMNS];  // Startadresse des Buldschirmspeichers
 
     // Konstruktur mit Initialisierung der Ports
-    CGA () : index_port (0x3d4), data_port (0x3d5) {
+    CGA () : index_port (0x3d4), data_port (0x3d5), graphics_lock(1) {
         CGA_DATA = (CGA_Char(*)[ROWS][COLUMNS])0xb8000;
     }
 
@@ -106,6 +112,10 @@ public:
 
     // Hilfsfunktion zur Erzeugung eines Attribut-Bytes
     unsigned char attribute (uint8_t bg, uint8_t fg, bool blink);
+
+    bool HasGraphicsLock();
+    void AcquireGraphicsLock();
+    void ReleaseGraphicsLock();
 };
 
 #endif

@@ -33,8 +33,6 @@ private:
     IOport data2;       // Zaehler-2 Datenregister
     IOport ppi;         // Status-Register des PPI
 
-    List<PITTimer> timers;
-    PITTimer empty;
 private:
     enum { time_base = 838 };  /* ns */
     const uint64_t interval = 10; //microseconds
@@ -43,7 +41,7 @@ private:
     uint64_t base_timer = 0;
 public:
 
-    PIT() : control(0x43), data0(0x40), data2(0x42), ppi(0x61), timers(empty) {
+    PIT() : control(0x43), data0(0x40), data2(0x42), ppi(0x61) {
 
     }
 

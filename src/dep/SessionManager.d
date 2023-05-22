@@ -1,9 +1,11 @@
 build/SessionManager.o: applications/sm/SessionManager.cc \
- applications/sm/./SessionManager.h kernel/Globals.h kernel/CPU.h \
- lib/Types.h kernel/interrupts/PIC.h kernel/allocator/BumpAllocator.h \
- kernel/Allocator.h kernel/allocator/LinkedListAllocator.h \
+ applications/sm/./SessionManager.h kernel/Globals.h devices/PIT.h \
+ kernel/interrupts/ISR.h kernel/IOPort.h lib/List.h lib/Types.h \
+ kernel/CPU.h kernel/interrupts/PIC.h kernel/allocator/BumpAllocator.h \
+ kernel/Allocator.h kernel/allocator/LinkedListAllocator.h lib/SpinLock.h \
  devices/PCSPK.h kernel/IOport.h devices/CGA_Stream.h devices/CGA.h \
- lib/OutStream.h lib/StringBuffer.h devices/Keyboard.h devices/Key.h \
- kernel/interrupts/ISR.h kernel/interrupts/IntDispatcher.h \
- kernel/Events/EventQueue.h lib/List.h kernel/events/Event.h \
- libc/string.h
+ lib/Semaphore.h kernel/threads/Thread.h lib/OutStream.h \
+ lib/StringBuffer.h devices/Keyboard.h devices/Key.h \
+ kernel/interrupts/IntDispatcher.h kernel/threads/Scheduler.h \
+ kernel/Events/EventQueue.h kernel/events/Event.h applications/music.h \
+ applications/thread_test/ThreadTest.h libc/string.h

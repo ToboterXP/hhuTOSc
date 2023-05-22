@@ -21,7 +21,6 @@
 
 
 #include "kernel/threads/Scheduler.h"
-#include "kernel/threads/TestThread.h"
 #include "kernel/Globals.h"
 
 extern "C" void preempt ();
@@ -45,15 +44,19 @@ void Scheduler::schedule () {
  *****************************************************************************/
 
 void Scheduler::preempt () {
-    if (active) yield();
-
+    if (active) {
+        if (lock.acquire()) return;
+        insecure_yield();
+    }
 }
 
 
 void Scheduler::ready (Thread * that) {
-    cpu.disable_int();
+    //cpu.disable_int();
+    lock.waitForAcquire();
     readyQueue.prepend(that);
-    cpu.enable_int();
+    lock.release();
+    //cpu.enable_int();
 }
 
 
@@ -66,11 +69,12 @@ void Scheduler::ready (Thread * that) {
  *                  nicht in der readyQueue.                                 *
  *****************************************************************************/
 void Scheduler::exit () {
-    cpu.disable_int();
+    //cpu.disable_int();
+    lock.waitForAcquire();
     killedQueue.append(active);
 
     if (readyQueue.is_empty()) {
-        kout << "No Threads - Halting" << endl;
+        kout << "No Threads - Halting"<< endl;
         cpu.die();
     }
 
@@ -89,12 +93,14 @@ void Scheduler::exit () {
  *      that        Zu terminierender Thread                                 *
  *****************************************************************************/
 void Scheduler::kill (Thread * that) {
-    cpu.disable_int();
+    //cpu.disable_int();
     if (that == active) {
+        //cpu.enable_int();
         exit();
-        cpu.enable_int();
         return;
     }
+
+    lock.waitForAcquire();
 
     ListBlock<Thread*>* current = readyQueue.get_first();
 
@@ -102,13 +108,13 @@ void Scheduler::kill (Thread * that) {
         if (current->data == that) {
             readyQueue.remove(current);
             killedQueue.append(that);
-            cpu.enable_int();
+            lock.release();
             return;
         }
         current = current->GetNext();
     }
-
-    cpu.enable_int();
+    lock.release();
+    //cpu.enable_int();
 }
 
 void Scheduler::disposeKilledThreads() {
@@ -131,14 +137,28 @@ void Scheduler::disposeKilledThreads() {
  *                  Achtung: Falls nur der Idle-Thread läuft, so ist die     *
  *                           readyQueue leer.                                *
  *****************************************************************************/
+
 void Scheduler::yield () {
+    lock.waitForAcquire();
     cpu.disable_int();
+    insecure_yield();
+    cpu.enable_int();
+}
+
+void Scheduler::insecure_yield () {
+    cpu.disable_int();
+
+    //kout << "Yield "<<active->tid<<endl;
+
     //have to clean up threads here, since they are necessary for context switch
     disposeKilledThreads();
+
+    if (active->getStackSize() > 3000) kout << "Stack Warning "<<active->tid<< " "<< active->getStackSize() << endl;
 
     readyQueue.prepend(active);
 
     dispatch(readyQueue.pop_last());
+    cpu.enable_int();
 }
 
 /*****************************************************************************
@@ -166,8 +186,29 @@ void Scheduler::start (Thread* first) {
  *      next        Thread der die CPU erhalten soll.                        *
  *****************************************************************************/
 void Scheduler::dispatch (Thread* next) {
+    dbgString = "Dispatch 1";
     Thread* current = active;
     active = next;
-    cpu.enable_int();
+    //cpu.enable_int();
+    lock.release();
+    dbgString = "Dispatch 2";
+
     current->switchTo (next);
+}
+
+// Umschalten auf naechsten Thread, aber den
+// Aufrufer nicht in die Ready-Queue einfuegen
+void Scheduler::block () {
+    //cpu.disable_int();
+    dispatch(readyQueue.pop_last());
+}
+
+
+// 'that' wieder in die Ready-Queue einfuegen
+void Scheduler::unblock (Thread *that) {
+    //cpu.disable_int();
+    lock.waitForAcquire();
+    readyQueue.prepend(that);
+    lock.release();
+    //cpu.enable_int();
 }

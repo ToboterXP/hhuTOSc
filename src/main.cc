@@ -13,10 +13,20 @@
 #include "kernel/Globals.h"
 #include "applications/sm/SessionManager.h"
 
-#include "kernel/threads/TestThread.h"
+#include "applications/thread_test/ThreadTest.h"
 
 extern "C" void _init_interrupts();
 //VM Passwort: root
+
+class T : public Thread {
+public:
+    virtual void main() {
+        while (1) {
+            //kout << systime << endl;
+            pcspk.delay(100);
+        }
+    }
+};
 
 int main() {
     kout.clear();
@@ -52,13 +62,20 @@ int main() {
 
     //allocator.dump_free_memory();
 
-    /*auto sm = applications::sm::SessionManager();
-    sm.main();*/
+    /*auto sm = new applications::sm::SessionManager();
+    sm->main();*/
 
-    for (int i=0; i<3; i++) {
-        TestThread* n = new TestThread();
+    /*for (int i=0; i<3; i++) {
+        ThreadTest* n = new ThreadTest(i);
         scheduler.ready(n);
-    }
+    }*/
+
+    //scheduler.ready(new T());
+
+    scheduler.ready(new applications::sm::SessionManager());
+
+    /*scheduler.ready(new T());
+    scheduler.ready(new T());*/
 
     scheduler.schedule();
 

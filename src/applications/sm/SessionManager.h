@@ -7,7 +7,7 @@ namespace applications {
 namespace sm {
 
 
-	class SessionManager {
+	class SessionManager : public Thread {
 	private:
 		char line_buffer[40];
 
@@ -17,6 +17,7 @@ namespace sm {
 	public:
 		void main();
 		void execute(char * command);
+		void runProgram(Thread * thread);
 	};
 
 }
