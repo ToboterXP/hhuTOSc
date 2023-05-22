@@ -10,32 +10,34 @@
 #ifndef __Globals_include__
 #define __Globals_include__
 
-
-#include "lib/Types.h"
+#include "devices/PIT.h"
 #include "kernel/CPU.h"
-#include "devices/PCSPK.h"
-#include "devices/CGA_Stream.h"
+#include "kernel/interrupts/PIC.h"
 #include "kernel/allocator/BumpAllocator.h"
 #include "kernel/allocator/LinkedListAllocator.h"
-#include "kernel/interrupts/IntDispatcher.h"
-#include "kernel/interrupts/PIC.h"
+#include "devices/PCSPK.h"
+#include "devices/CGA_Stream.h"
 #include "devices/Keyboard.h"
+#include "kernel/interrupts/IntDispatcher.h"
 #include "kernel/threads/Scheduler.h"
-#include "devices/PIT.h"
-#include "devices/VGA_Stream.h"
 
+#include "kernel/Events/EventQueue.h"
 
-extern CPU                  cpu;        
-extern PCSPK                pcspk;      // PC-Lautsprecher
-//extern CGA_Stream           kout;       // Ausgabe-Strom fuer Kernel
-extern VGA_Stream           kout;       // VGA-Ausgabe-Strom fuer Kernel
-extern uint64_t             total_mem;  // RAM total
-//extern BumpAllocator    allocator;       
-extern LinkedListAllocator  allocator;       
-extern IntDispatcher        intdis;     // Unterbrechungsverteilung
-extern PIC                  pic;        // Interrupt-Controller
-extern Keyboard             kb;         // Tastatur
-extern Scheduler            scheduler;  // Scheduler
-extern PIT                  pit;        // Zeitgeber & Systemtime
+extern CPU                   cpu;        // CPU-spezifische Funktionen
+extern PCSPK                 pcspk;      // PC-Lautsprecher
+extern VGA_Stream            kout;       // Ausgabe-Strom fuer Kernel
+extern Keyboard              kb;         // Tastatur
+extern IntDispatcher         intdis;     // Unterbrechungsverteilung
+extern PIC                   pic;        // Interrupt-Controller
+extern EventQueue            eventQueue; //EventQueue
+extern uint64_t          total_mem;  // RAM total
+//extern BumpAllocator         allocator;
+extern LinkedListAllocator   allocator;
+extern Scheduler        scheduler;  // Scheduler
+
+extern volatile uint64_t              systime;    // wird all 10ms hochgezaehlt
+extern PIT                   pit;        // Zeitgeber
+
+extern char * dbgString;
 
 #endif
