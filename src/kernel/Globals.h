@@ -21,7 +21,7 @@
 #include "kernel/interrupts/IntDispatcher.h"
 #include "kernel/threads/Scheduler.h"
 
-#include "kernel/Events/EventQueue.h"
+#include "kernel/events/EventQueue.h"
 
 extern CPU                   cpu;        // CPU-spezifische Funktionen
 extern PCSPK                 pcspk;      // PC-Lautsprecher
