@@ -95,6 +95,7 @@ public:
 
     // Anzeige von 'n' Zeichen im Grafikmodus ab der aktuellen Cursorposition
     void print (char* string, uint32_t n);
+    void scrollup();
 
     // Setze Cursor fuer 'print'
     void setCursorPos(unsigned int char_x, unsigned int char_y);

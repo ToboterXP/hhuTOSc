@@ -35,7 +35,7 @@ void int_disp (unsigned int vector) {
     //kout << "Int "<< dec << vector <<endl;
     //cpu.disable_int();
     if (vector < 32) {
-        kout.setCursorPos(0,0);
+        kout.clear();
         pcspk.off();
         kout <<dbgString <<" Error "<< dec << vector <<endl;
 

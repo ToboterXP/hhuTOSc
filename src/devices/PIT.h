@@ -12,7 +12,7 @@
 #define __PIT_include__
 
 #include "kernel/interrupts/ISR.h"
-#include "kernel/IOPort.h"
+#include "kernel/IOport.h"
 #include "lib/List.h"
 
 typedef void (*CallbackHandler)();

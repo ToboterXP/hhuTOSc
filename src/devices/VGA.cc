@@ -128,6 +128,8 @@ void VGA::clearLine(int y, unsigned char attrib) {
 }
 
 
+
+
 /*****************************************************************************
  * Methode:         VGA::drawFilledCircle                                    *
  *---------------------------------------------------------------------------*
@@ -269,8 +271,9 @@ void VGA::print (char* string, uint32_t n) {
         }
         string++;
 
-        if (t_ypos >= yres) {
-//            scrollup();
+        if (t_ypos >= yres-t_line_height) {
+            scrollup();
+            //clearLine(t_ypos / (t_fnt->get_char_height() + t_line_space));
             t_ypos -= t_line_height;
         }
         n--;
@@ -562,6 +565,24 @@ void VGA::drawPixel(uint32_t x, uint32_t y,uint32_t col) {
     }
 }
 
+void VGA::scrollup() {
+    uint8_t *ptr = (uint8_t *) lfb;
+
+	if (isGraphicOn()==false) return ;
+
+    if (mode == 0) ptr = (uint8_t *) hfb;
+
+    uint64_t offset = (xres * (bpp/8) * (t_fnt->get_char_height() + t_line_space));
+
+    uint8_t * gptr;
+    for (gptr = ptr + offset; gptr < ptr + (xres*yres*(bpp/8)); gptr++) {
+        *(gptr - offset) = *(gptr);
+    }
+
+    for (uint8_t * gptr2 = gptr - offset; gptr2 < gptr; gptr2++) {
+        *(gptr2) = 0;
+    }
+}
 
 /*****************************************************************************
  * Methode:         VGA::setPixelDirect                                      *
@@ -604,6 +625,7 @@ void VGA::setPixelDirect(uint8_t *ptr, uint32_t col) {
  * Beschreibung:    Bildschirm loeschen.                                     *
  *****************************************************************************/
 void VGA::clear() {
+    setCursorPos(0,0);
     uint32_t *ptr = (uint32_t *)lfb;
     uint32_t i;
 

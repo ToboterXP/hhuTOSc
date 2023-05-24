@@ -121,11 +121,16 @@ void SessionManager::execute(char * command) {
 		kout << "clear: Clears the screen" << endl;
 		kout << "reboot: Reboots the OS" << endl;
 		kout << "heap: Displays the heap" << endl;
-		kout << "thread_test: Starts three threads that all attempt to acquire the graphics lock, and print some text" << endl;
+		kout << "thread_test: Simultanously start three threads that acquire the graphics lock, and print some text" << endl;
+		kout << "panic: Cause a GPF"<<endl;
 		kout << endl<<"Programs (terminate via Delete):" << endl;
 		kout << "tetris: Plays the tetris theme" << endl;
 		kout << "aerodynamic: Plays the aerodynamic theme" << endl;
 
+	}
+
+	else if (strcmp(command, "panic") == 0) {
+		((void (*)()) NULL)();
 	}
 
 	else if (strcmp(command, "heap") == 0) {
@@ -172,7 +177,7 @@ void SessionManager::execute(char * command) {
 	}
 
 	else {
-		kout << "Invalid Command" << endl;
+		kout << "Invalid Command (type help for a list of commands)" << endl;
 	}
 }
 
