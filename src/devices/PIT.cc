@@ -54,8 +54,10 @@ void PIT::trigger () {
 
     base_timer++;
 
-    if(base_timer % 6 == 0) systime++;
-    if(base_timer % 6 == 0) scheduler.preempt();
+    if(base_timer % 21 == 0) {
+        systime++;
+        scheduler.preempt();
+    }
 
     //kout.show(79, 0, 0x30 + base_timer%0x50);
 

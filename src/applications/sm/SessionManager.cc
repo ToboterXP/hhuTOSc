@@ -121,6 +121,7 @@ void SessionManager::execute(char * command) {
 		kout << "clear: Clears the screen" << endl;
 		kout << "reboot: Reboots the OS" << endl;
 		kout << "heap: Displays the heap" << endl;
+		kout << "systime: Displays time since system start" << endl;
 		kout << "thread_test: Simultanously start three threads that acquire the graphics lock, and print some text" << endl;
 		kout << "panic: Cause a GPF"<<endl;
 		kout << endl<<"Programs (terminate via Delete):" << endl;
@@ -174,6 +175,14 @@ void SessionManager::execute(char * command) {
 	    }
 		pcspk.delay(100);
 		kout.AcquireGraphicsLock();
+	}
+
+	else if (strcmp(command, "systime") == 0) {
+		int seconds = (systime /1000) % 60;
+		int minutes = (systime /60000) % 60;
+		int hours = (systime / 3600000);
+
+		kout << dec << "Time since system start ("<<systime<<"ms): "<<hours<<" Hours, "<<minutes << " Minutes, "<<seconds<<" Seconds"<<endl;
 	}
 
 	else {
