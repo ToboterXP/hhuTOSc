@@ -48,7 +48,7 @@ void PIT::init () {
 void PIT::trigger () {
     dbgString = "PIT";
     //restart timer
-    /*control.outb(0b00110000); //Timer 0, Lowbyte/Hibyte, IRQ on terminal count
+    /*control.outb(0b00110000); //Timer 0, Lowbyte/Hibyte, Square Wave
     data0.outb(timer);
     data0.outb(0);*/
 
