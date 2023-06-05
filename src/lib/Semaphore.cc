@@ -4,22 +4,22 @@
 
 // 'Passieren': Warten auf das Freiwerden eines kritischen Abschnitts.
 void Semaphore::acquire () {
-	//access_lock.waitForAcquire();
+	access_lock.waitForAcquire();
 	counter--;
 	//kout <<"AB"<< counter << endl;
 	if (counter <= 0 && lock.acquire()) { //lock spinlock on first thread before the semaphore is closed
 		waitQueue.prepend(scheduler.get_active());
-		//access_lock.release();
+		access_lock.release();
 		scheduler.block();
 	} else {
 		acquiredList.prepend(scheduler.get_active());
 	}
-	//access_lock.release();
+	access_lock.release();
 }
 
 // 'Vreigeben': Freigeben des kritischen Abschnitts.
 void Semaphore::release () {
-	//access_lock.waitForAcquire();
+	access_lock.waitForAcquire();
 	counter++;
 	//kout << "BB"<<counter << endl;
 	if (!waitQueue.is_empty()) {
@@ -40,7 +40,7 @@ void Semaphore::release () {
 		current = current->GetNext();
 	}
 
-	//access_lock.release();
+	access_lock.release();
 }
 
 

@@ -94,7 +94,7 @@ inline unsigned int PCSPK::readCounter() {
 //__attribute__((optimize("O0"))) void PCSPK::delay (int time);
 void PCSPK::delay (int time) {
     dbgString = "E";
-    time /=4; //time correction, because for some reason the long term average of the PIT is vastly different than the short term average
+    time /=7; //time correction, because for some reason the long term average of the PIT is vastly different than the short term average
     uint64_t end = systime+time;
     while (systime < end) {scheduler.yield();}
 }

@@ -6,5 +6,5 @@ build/Semaphore.o: lib/Semaphore.cc lib/Semaphore.h lib/List.h \
  devices/PCSPK.h devices/VGA_Stream.h devices/VGA.h devices/CGA.h \
  lib/Semaphore.h devices/fonts/Fonts.h lib/OutStream.h lib/StringBuffer.h \
  devices/Keyboard.h devices/Key.h kernel/interrupts/IntDispatcher.h \
- kernel/threads/Scheduler.h kernel/Events/EventQueue.h \
+ kernel/threads/Scheduler.h kernel/events/EventQueue.h \
  kernel/events/Event.h

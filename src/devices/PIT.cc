@@ -28,7 +28,11 @@ void PIT::init () {
 
     timer = 1193182 * interval / 1000000;
 
-    trigger();//properly set the timers
+    control.outb(0b00110110); //Timer 0, Lowbyte/Hibyte, IRQ on terminal count
+    data0.outb(timer);
+    data0.outb(0);
+
+    //trigger();//properly set the timers
 }
 
 
@@ -44,9 +48,9 @@ void PIT::init () {
 void PIT::trigger () {
     dbgString = "PIT";
     //restart timer
-    control.outb(0b00110000); //Timer 0, Lowbyte/Hibyte, IRQ on terminal count
+    /*control.outb(0b00110000); //Timer 0, Lowbyte/Hibyte, IRQ on terminal count
     data0.outb(timer);
-    data0.outb(0);
+    data0.outb(0);*/
 
     if (!allocator.is_available()) return;
 
@@ -54,7 +58,7 @@ void PIT::trigger () {
 
     base_timer++;
 
-    if(base_timer % 21 == 0) {
+    if(base_timer % 7 == 0) {
         systime++;
         scheduler.preempt();
     }

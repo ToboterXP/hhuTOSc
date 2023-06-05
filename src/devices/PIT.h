@@ -35,7 +35,7 @@ private:
 
 private:
     enum { time_base = 838 };  /* ns */
-    const uint64_t interval = 10; //microseconds
+    const uint64_t interval = 1000; //microseconds
     uint16_t timer;
 
     uint64_t base_timer = 0;

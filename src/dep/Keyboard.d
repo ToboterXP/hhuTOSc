@@ -6,5 +6,5 @@ build/Keyboard.o: devices/Keyboard.cc devices/Keyboard.h devices/Key.h \
  devices/VGA_Stream.h devices/VGA.h devices/CGA.h lib/Semaphore.h \
  kernel/threads/Thread.h devices/fonts/Fonts.h lib/OutStream.h \
  lib/StringBuffer.h kernel/interrupts/IntDispatcher.h \
- kernel/threads/Scheduler.h kernel/Events/EventQueue.h \
+ kernel/threads/Scheduler.h kernel/events/EventQueue.h \
  kernel/events/Event.h

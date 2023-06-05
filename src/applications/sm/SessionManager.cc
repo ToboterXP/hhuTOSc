@@ -102,92 +102,90 @@ void SessionManager::main() {
 	}
 }
 
+void c_hello(SessionManager * sm) {
+	kout << "Hello World " << "012345678901234567890123456789" << endl;
+}
+
+void c_reboot(SessionManager * sm) {
+	kout << "Rebooting..." << endl;
+	kb.reboot();
+}
+
+void c_clear(SessionManager * sm) {
+	kout.clear();
+}
+
+void c_help(SessionManager * sm) {
+	auto current = sm->commands.get_first();
+	while (current) {
+		kout << current->data.command <<": "<<current->data.description<<endl;
+		current = current->GetNext();
+	}
+}
+
+/*void c_panic(SessionManager * sm) {
+	((void (*)()) 0x1000000000)();
+}*/
+
+void c_heap(SessionManager * sm) {
+	allocator.dump_free_memory();
+}
+
+void c_tetris(SessionManager * sm) {
+	sm->runProgram(new Music(0));
+}
+
+void c_aerodynamic(SessionManager * sm) {
+	sm->runProgram(new Music(1));
+}
+
+void c_thread_test(SessionManager * sm) {
+	kout.ReleaseGraphicsLock();
+
+	for (int i=0; i<3; i++) {
+		ThreadTest* n = new ThreadTest(i);
+		scheduler.ready(n);
+	}
+	pcspk.delay(100);
+	kout.AcquireGraphicsLock();
+}
+
+void c_systime(SessionManager * sm) {
+	int seconds = (systime /1000) % 60;
+	int minutes = (systime /60000) % 60;
+	int hours = (systime / 3600000);
+
+	kout << dec << "Time since system start ("<<systime<<"ms): "<<hours<<" Hours, "<<minutes << " Minutes, "<<seconds<<" Seconds"<<endl;
+}
+
+SessionManager::SessionManager() {
+	registerCommand(Command("hello", "Prints a debug message", &c_hello));
+	registerCommand(Command("help", "Prints all commands", &c_help));
+	registerCommand(Command("reboot", "Reboots the PC", &c_reboot));
+	registerCommand(Command("clear", "Clears the screen", &c_clear));
+	registerCommand(Command("heap", "Displays the heap's state", &c_heap));
+	registerCommand(Command("systime", "Displays time since system start", &c_systime));
+	registerCommand(Command("thread_test", "Start three threads that acquire the graphics lock, and print some text", &c_thread_test));
+	//registerCommand(Command("panic", "Cause a GPF", &c_panic));
+	registerCommand(Command("tetris", "Plays the tetris theme (Terminate via Delete)", &c_tetris));
+	registerCommand(Command("aerodynamic", "Plays the aerodynamic theme (Terminate via Delete)", &c_aerodynamic));
+}
+
+void SessionManager::registerCommand(Command command) {
+	commands.append(command);
+}
+
 void SessionManager::execute(char * command) {
-	if (strcmp(command, "hello") == 0) {
-		kout << "Hello World " << "012345678901234567890123456789" << endl;
+	auto current = commands.get_first();
+	while (current) {
+		if (strcmp(current->data.command, command) == 0) {
+			current->data.callback(this);
+			return;
+		}
+		current = current->GetNext();
 	}
 
-	else if (strcmp(command, "reboot") == 0) {
-		kout << "Rebooting..." << endl;
-		kb.reboot();
-	}
-
-	else if (strcmp(command, "clear") == 0) {
-		kout.clear();
-	}
-
-	else if (strcmp(command, "help") == 0) {
-		kout << "hello: Prints a debug message" << endl;
-		kout << "clear: Clears the screen" << endl;
-		kout << "reboot: Reboots the OS" << endl;
-		kout << "heap: Displays the heap" << endl;
-		kout << "systime: Displays time since system start" << endl;
-		kout << "thread_test: Simultanously start three threads that acquire the graphics lock, and print some text" << endl;
-		kout << "panic: Cause a GPF"<<endl;
-		kout << endl<<"Programs (terminate via Delete):" << endl;
-		kout << "tetris: Plays the tetris theme" << endl;
-		kout << "aerodynamic: Plays the aerodynamic theme" << endl;
-
-	}
-
-	else if (strcmp(command, "panic") == 0) {
-		((void (*)()) NULL)();
-	}
-
-	else if (strcmp(command, "heap") == 0) {
-		allocator.dump_free_memory();
-		/*kout<<endl;
-
-	    void * a = allocator.alloc(256);
-	    void * b = allocator.alloc(512);
-
-	    kout <<"Allocated size 0x100: "<<a<<endl;
-		kout <<"Allocated size 0x200: "<<b<<endl;
-
-	    allocator.dump_free_memory();
-		kout<<endl;
-
-	    allocator.free(a);
-
-	    allocator.dump_free_memory();
-		kout<<endl;
-
-	    allocator.free(b);
-
-	    allocator.dump_free_memory();
-		kout<<endl;*/
-	}
-
-	else if (strcmp(command, "tetris") == 0) {
-		runProgram(new Music(0));
-	}
-
-	else if (strcmp(command, "aerodynamic") == 0) {
-		runProgram(new Music(1));
-	}
-
-	else if (strcmp(command, "thread_test") == 0) {
-		kout.ReleaseGraphicsLock();
-
-		for (int i=0; i<3; i++) {
-	        ThreadTest* n = new ThreadTest(i);
-	        scheduler.ready(n);
-	    }
-		pcspk.delay(100);
-		kout.AcquireGraphicsLock();
-	}
-
-	else if (strcmp(command, "systime") == 0) {
-		int seconds = (systime /1000) % 60;
-		int minutes = (systime /60000) % 60;
-		int hours = (systime / 3600000);
-
-		kout << dec << "Time since system start ("<<systime<<"ms): "<<hours<<" Hours, "<<minutes << " Minutes, "<<seconds<<" Seconds"<<endl;
-	}
-
-	else {
-		kout << "Invalid Command (type help for a list of commands)" << endl;
-	}
+	kout << "Invalid command (Enter help for a list of commands)" << endl;
 }
 
 void SessionManager::runProgram(Thread* thread) {

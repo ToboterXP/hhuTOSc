@@ -166,19 +166,6 @@ bool Keyboard::key_decoded () {
             done = true;
         }
 
-    if (code < 0xe0) {
-        Event pressEvent;
-        pressEvent.type = EventType::KEY_DOWN;
-        pressEvent.keyEvent.code = code;
-        if (done) {
-            pressEvent.keyEvent.has_key = true;
-            pressEvent.keyEvent.code = gather.scancode();
-            pressEvent.keyEvent.key = gather;
-        }
-        eventQueue.PushEvent(pressEvent);
-    }
-
-
     // Ein Prefix gilt immer nur fuer den unmittelbar nachfolgenden Code.
     // Also ist es jetzt abgehandelt.
     prefix = 0;
@@ -277,8 +264,19 @@ void Keyboard::init() {
 
 void Keyboard::trigger() {
     dbgString = "Keyboard";
-    code = data_port.inb();
-    key_decoded();
+    uint8_t status = ctrl_port.inb();
+    if ( status & outb && (~status) & auxb ) {
+        code = data_port.inb();
+        
+        if (key_decoded() && gather.scancode() < 0xe0) {
+            Event pressEvent;
+            pressEvent.type = EventType::KEY_DOWN;
+            pressEvent.keyEvent.has_key = true;
+            pressEvent.keyEvent.code = gather.scancode();
+            pressEvent.keyEvent.key = gather;
+            eventQueue.PushEvent(pressEvent);
+        }
+    }
 }
 
 
