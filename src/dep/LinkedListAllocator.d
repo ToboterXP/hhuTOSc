@@ -7,4 +7,4 @@ build/LinkedListAllocator.o: kernel/allocator/LinkedListAllocator.cc \
  kernel/threads/Thread.h devices/fonts/Fonts.h lib/OutStream.h \
  lib/StringBuffer.h devices/Keyboard.h devices/Key.h \
  kernel/interrupts/IntDispatcher.h kernel/threads/Scheduler.h \
- kernel/Events/EventQueue.h kernel/events/Event.h
+ kernel/events/EventQueue.h kernel/events/Event.h

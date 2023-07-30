@@ -84,14 +84,17 @@ void LinkedListAllocator::free(void *ptr) {
 	current->is_free = true;
 
 	heap_block* first_free = current;
-	while (first_free->prev != NULL && first_free->prev->is_free) {
+	/*while (first_free->prev != NULL && first_free->prev->is_free) {
 		first_free = first_free->prev;
-	}
+	}*/
+
+	if (current->prev != NULL && current->prev->is_free) first_free = current->prev;
 
 	heap_block* last_free = current;
-	while (last_free->next != NULL && last_free->next->is_free) {
+	/*while (last_free->next != NULL && last_free->next->is_free) {
 		last_free = last_free->next;
-	}
+	}*/
+	if (current->next != NULL && current->next->is_free) last_free = current->next;
 
 	if (last_free == list_end) list_end = first_free;
 
